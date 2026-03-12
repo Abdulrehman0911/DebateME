@@ -4,64 +4,68 @@ import '../../../core/constants/app_colors.dart';
 class DLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Background D shape
-    final Path dPath = Path();
-    dPath.moveTo(size.width * 0.2, size.height * 0.1);
-    dPath.lineTo(size.width * 0.5, size.height * 0.1);
-    
-    // Create the right curve for 'D'
-    dPath.cubicTo(
-      size.width * 0.8, size.height * 0.1,  // Control point 1
-      size.width * 1.0, size.height * 0.3,  // Control point 2
-      size.width * 0.9, size.height * 0.5   // End point
-    );
-    
-    dPath.cubicTo(
-      size.width * 1.0, size.height * 0.7,
-      size.width * 0.8, size.height * 0.9,
-      size.width * 0.5, size.height * 0.9
-    );
-    
-    dPath.lineTo(size.width * 0.2, size.height * 0.9);
-    dPath.close();
-
-    final Paint dShapePaint = Paint()
+    final Paint paint = Paint()
       ..color = AppColors.primaryText
       ..style = PaintingStyle.fill;
-      
-    canvas.drawPath(dPath, dShapePaint);
-    
-    // Lightning Bolt cut-out (Black/Background)
+
+    // 1. Create the base 'D' shape (Bold and Solid)
+    final Path dPath = Path();
+    final double l = size.width * 0.15; // Left
+    final double r = size.width * 0.95; // Right edge of curve
+    final double t = size.height * 0.05; // Top
+    final double b = size.height * 0.95; // Bottom
+    final double curveStart = size.width * 0.5;
+
+    dPath.moveTo(l, t);
+    dPath.lineTo(curveStart, t);
+    dPath.cubicTo(
+      r, t, 
+      r, b, 
+      curveStart, b
+    );
+    dPath.lineTo(l, b);
+    dPath.close();
+
+    // 2. Create the precise Lightning Bolt path based on reference
     final Path boltPath = Path();
-    boltPath.moveTo(size.width * 0.45, size.height * 0.1);
-    boltPath.lineTo(size.width * 0.55, size.height * 0.45);
-    boltPath.lineTo(size.width * 0.40, size.height * 0.55);
-    boltPath.lineTo(size.width * 0.50, size.height * 0.9);
-    boltPath.lineTo(size.width * 0.42, size.height * 0.9);
-    boltPath.lineTo(size.width * 0.32, size.height * 0.55);
-    boltPath.lineTo(size.width * 0.47, size.height * 0.45);
-    boltPath.lineTo(size.width * 0.37, size.height * 0.1);
+    // Start from top-center, slanted right to left
+    boltPath.moveTo(size.width * 0.58, t - 5); 
+    boltPath.lineTo(size.width * 0.42, size.height * 0.48);
+    // Zigzag middle
+    boltPath.lineTo(size.width * 0.58, size.height * 0.52);
+    // Slant down to bottom right
+    boltPath.lineTo(size.width * 0.42, b + 5);
+    
+    // Create thickness for the bolt
+    boltPath.lineTo(size.width * 0.32, b + 5);
+    boltPath.lineTo(size.width * 0.48, size.height * 0.52);
+    boltPath.lineTo(size.width * 0.32, size.height * 0.48);
+    boltPath.lineTo(size.width * 0.48, t - 5);
     boltPath.close();
 
-    final Paint boltPaint = Paint()
-      ..color = AppColors.background
-      ..style = PaintingStyle.fill;
-      
-    // Small Orange Accent in middle of bolt
-    final Path accentPath = Path();
-    accentPath.moveTo(size.width * 0.40, size.height * 0.55);
-    accentPath.lineTo(size.width * 0.43, size.height * 0.53);
-    accentPath.lineTo(size.width * 0.47, size.height * 0.45);
-    accentPath.lineTo(size.width * 0.44, size.height * 0.47);
-    accentPath.close();
-    
+    // 3. Combine for true cutout
+    final Path finalPath = Path.combine(
+      PathOperation.difference,
+      dPath,
+      boltPath,
+    );
+
+    canvas.drawPath(finalPath, paint);
+
+    // 4. Subtle center accent (Orange as requested in first redesign)
     final Paint accentPaint = Paint()
       ..color = AppColors.accent
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);
 
-    // Draw the bolt mask and accent
-    canvas.drawPath(boltPath, boltPaint);
-    canvas.drawPath(accentPath, accentPaint);
+    final Path accent = Path();
+    accent.moveTo(size.width * 0.48, size.height * 0.52);
+    accent.lineTo(size.width * 0.42, size.height * 0.48);
+    accent.lineTo(size.width * 0.45, size.height * 0.47);
+    accent.lineTo(size.width * 0.51, size.height * 0.51);
+    accent.close();
+    
+    canvas.drawPath(accent, accentPaint);
   }
 
   @override

@@ -10,4 +10,7 @@ class AppColors {
   static const Color secondaryText = Color(0xFF888888);
   static const Color surface = Color(0xFF1E1E1E);
   static const Color divider = Color(0xFF2C2C2C);
+  
+  // Premium Glow
+  static const Color premiumBlue = Color(0xFF00D1FF); // Electric Cyan
 }

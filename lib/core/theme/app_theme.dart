@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 class AppTheme {
@@ -13,11 +14,11 @@ class AppTheme {
         onPrimary: AppColors.primaryText,
         onSurface: AppColors.primaryText,
       ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(color: AppColors.primaryText, fontWeight: FontWeight.w900, fontFamily: 'Public Sans'),
-        displayMedium: TextStyle(color: AppColors.primaryText, fontWeight: FontWeight.bold, fontFamily: 'Public Sans'),
-        bodyLarge: TextStyle(color: AppColors.primaryText, fontFamily: 'Public Sans'),
-        bodyMedium: TextStyle(color: AppColors.primaryText, fontFamily: 'Public Sans'),
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.publicSans(color: AppColors.primaryText, fontWeight: FontWeight.w900),
+        displayMedium: GoogleFonts.publicSans(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+        bodyLarge: GoogleFonts.publicSans(color: AppColors.primaryText),
+        bodyMedium: GoogleFonts.publicSans(color: AppColors.primaryText),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,

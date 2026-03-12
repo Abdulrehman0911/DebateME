@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../home/home_screen.dart';
 import 'widgets/d_logo_painter.dart';
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
     _progressController = AnimationController(
        vsync: this,
-       duration: const Duration(seconds: 3),
+       duration: const Duration(seconds: 5),
     )..forward();
 
     _progressController.addStatusListener((status) {
@@ -92,28 +93,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 // Title
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text(
                       'DEBATE',
-                      style: TextStyle(
+                      style: GoogleFonts.publicSans(
                         color: AppColors.primaryText,
                         fontSize: 36,
                         fontWeight: FontWeight.w900,
                         fontStyle: FontStyle.italic,
                         letterSpacing: -1,
-                        fontFamily: 'Public Sans',
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'ME',
-                      style: TextStyle(
+                      style: GoogleFonts.publicSans(
                         color: AppColors.accent,
                         fontSize: 36,
                         fontWeight: FontWeight.w900,
                         fontStyle: FontStyle.italic,
                         letterSpacing: -1,
-                        fontFamily: 'Public Sans',
                       ),
                     ),
                   ],
@@ -124,12 +123,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 // Tagline
                 Text(
                   'SHARP MINDS. BOLD ARGUMENTS.',
-                  style: TextStyle(
+                  style: GoogleFonts.publicSans(
                     color: AppColors.primaryText.withOpacity(0.4),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 2,
-                    fontFamily: 'Public Sans',
                   ),
                 ),
                 
@@ -145,11 +143,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         children: [
                           Text(
                             'INITIALIZING ENVIRONMENT',
-                            style: TextStyle(
+                            style: GoogleFonts.publicSans(
                               color: AppColors.primaryText.withOpacity(0.4),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 1.5,
+                              shadows: [
+                                Shadow(
+                                  color: AppColors.premiumBlue.withOpacity(0.5),
+                                  blurRadius: 12,
+                                ),
+                              ],
                             ),
                           ),
                           AnimatedBuilder(
@@ -158,7 +162,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               final percent = (_progressController.value * 100).toInt();
                               return Text(
                                 '$percent%',
-                                style: const TextStyle(
+                                style: GoogleFonts.publicSans(
                                   color: AppColors.accent,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -169,19 +173,37 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         ],
                       ),
                       const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: AnimatedBuilder(
-                          animation: _progressController,
-                          builder: (context, child) {
-                            return LinearProgressIndicator(
-                              value: _progressController.value,
-                              backgroundColor: AppColors.surface,
-                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
-                              minHeight: 4,
-                            );
-                          },
-                        ),
+                      Stack(
+                        children: [
+                          Container(
+                            height: 2,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1D23),
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                          AnimatedBuilder(
+                            animation: _progressController,
+                            builder: (context, child) {
+                              return Container(
+                                height: 2,
+                                width: 240 * _progressController.value,
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent,
+                                  borderRadius: BorderRadius.circular(1),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.premiumBlue.withOpacity(0.25),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 0),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -197,12 +219,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             right: 0,
             child: Center(
               child: Text(
-                'PREMIUM COGNITIVE PLATFORM',
-                style: TextStyle(
+                '• PREMIUM COGNITIVE PLATFORM •',
+                style: GoogleFonts.publicSans(
                   color: AppColors.primaryText.withOpacity(0.2),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 2,
+                  shadows: [
+                    Shadow(
+                      color: AppColors.premiumBlue.withOpacity(0.15),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
               ),
             ),
