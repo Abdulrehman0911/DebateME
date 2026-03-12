@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DebateMe - Match Setup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#121212", // Matte Graphite as per request
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(236, 91, 19, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-100 min-h-screen font-display">
+<!-- Main Container -->
+<div class="relative flex flex-col min-h-screen w-full max-w-2xl mx-auto border-x border-primary/10 bg-background-dark">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex items-center bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-primary/10">
+<div class="text-slate-100 flex size-10 shrink-0 items-center justify-center hover:bg-white/5 rounded-full transition-colors cursor-pointer">
+<span class="material-symbols-outlined">close</span>
+</div>
+<h2 class="text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10 uppercase tracking-[0.2em]">DebateMe</h2>
+</header>
+<!-- Progress Indicator -->
+<div class="flex w-full flex-row items-center justify-center gap-2 py-6">
+<div class="h-1.5 w-12 rounded-full bg-primary"></div>
+<div class="h-1.5 w-12 rounded-full bg-primary/20"></div>
+<div class="h-1.5 w-12 rounded-full bg-primary/20"></div>
+</div>
+<main class="flex-1 overflow-y-auto custom-scrollbar px-6 pb-32">
+<!-- Step 1: Resolution -->
+<section class="mb-10">
+<div class="flex items-center gap-3 mb-4">
+<span class="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded">01</span>
+<h3 class="text-slate-100 text-xl font-semibold tracking-tight">Enter Resolution</h3>
+</div>
+<div class="relative group">
+<textarea class="form-input w-full min-h-32 resize-none rounded-xl border border-primary/20 bg-white/5 p-5 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 text-lg leading-relaxed" placeholder="What is the central thesis of your debate? e.g. Artificial Intelligence will inevitably surpass human creative capacity..."></textarea>
+<div class="absolute bottom-4 right-4 text-xs text-slate-500">0 / 280</div>
+</div>
+</section>
+<!-- Step 2: Stance -->
+<section class="mb-10">
+<div class="flex items-center gap-3 mb-4">
+<span class="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded">02</span>
+<h3 class="text-slate-100 text-xl font-semibold tracking-tight">Choose Stance</h3>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex flex-col items-center justify-center py-6 rounded-xl border-2 border-primary bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20">
+<span class="text-2xl tracking-widest">PRO</span>
+<span class="text-[10px] mt-1 opacity-80 uppercase tracking-tighter">Affirmative</span>
+</button>
+<button class="flex flex-col items-center justify-center py-6 rounded-xl border border-primary/20 bg-white/5 text-slate-400 font-bold hover:bg-white/10 transition-all">
+<span class="text-2xl tracking-widest">CON</span>
+<span class="text-[10px] mt-1 opacity-60 uppercase tracking-tighter">Negative</span>
+</button>
+</div>
+</section>
+<!-- Step 3: Opponent Selection -->
+<section class="mb-6">
+<div class="flex items-center gap-3 mb-4">
+<span class="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded">03</span>
+<h3 class="text-slate-100 text-xl font-semibold tracking-tight">Choose Your Opponent</h3>
+</div>
+<div class="space-y-4">
+<!-- The Philosopher -->
+<div class="group relative flex items-center p-5 rounded-xl border border-primary/10 bg-white/5 hover:border-primary/40 hover:bg-white/[0.08] transition-all cursor-pointer">
+<div class="size-14 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-3xl">account_balance</span>
+</div>
+<div class="ml-4 flex-1">
+<h4 class="text-slate-100 font-bold text-lg">The Philosopher</h4>
+<p class="text-slate-400 text-sm leading-snug">Uses logic, ethics, and historical frameworks to dismantle arguments from their foundation.</p>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">radio_button_unchecked</span>
+</div>
+</div>
+<!-- The Politician -->
+<div class="group relative flex items-center p-5 rounded-xl border-2 border-primary bg-white/10 transition-all cursor-pointer">
+<div class="size-14 rounded-lg bg-primary flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined text-3xl">gavel</span>
+</div>
+<div class="ml-4 flex-1">
+<h4 class="text-slate-100 font-bold text-lg">The Politician</h4>
+<p class="text-slate-300 text-sm leading-snug">Master of rhetoric, public sentiment, and tactical redirection. A high-stakes strategist.</p>
+</div>
+<div class="text-primary">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+</div>
+<!-- The Aggressor -->
+<div class="group relative flex items-center p-5 rounded-xl border border-primary/10 bg-white/5 hover:border-primary/40 hover:bg-white/[0.08] transition-all cursor-pointer">
+<div class="size-14 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-3xl">bolt</span>
+</div>
+<div class="ml-4 flex-1">
+<h4 class="text-slate-100 font-bold text-lg">The Aggressor</h4>
+<p class="text-slate-400 text-sm leading-snug">Fast-paced, uncompromising, and focuses on exposing every minor flaw in your reasoning.</p>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl p-6 bg-gradient-to-t from-background-dark via-background-dark to-transparent">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-5 rounded-xl transition-all active:scale-[0.98] shadow-2xl shadow-primary/40 uppercase tracking-[0.25em] text-sm">
+                Enter Arena
+            </button>
+</footer>
+</div>
+</body></html>
