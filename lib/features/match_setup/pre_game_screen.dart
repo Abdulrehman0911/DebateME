@@ -27,6 +27,11 @@ class _PreGameScreenState extends State<PreGameScreen> {
       'icon': '🎙️',
     },
     {
+      'name': 'The Scientist',
+      'description': 'Empirical, evidence-based, and focused on statistical probability.',
+      'icon': '🧬',
+    },
+    {
       'name': 'The Aggressor',
       'description': 'Direct, blunt, and relentless in dismantling arguments.',
       'icon': '⚔️',
