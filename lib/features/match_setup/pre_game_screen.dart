@@ -1,0 +1,258 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/constants/app_colors.dart';
+import '../arena/arena_screen.dart';
+
+class PreGameScreen extends StatefulWidget {
+  const PreGameScreen({super.key});
+
+  @override
+  State<PreGameScreen> createState() => _PreGameScreenState();
+}
+
+class _PreGameScreenState extends State<PreGameScreen> {
+  final TextEditingController _resolutionController = TextEditingController();
+  String _selectedStance = 'PRO'; // Default to PRO
+  String? _selectedOpponent;
+
+  final List<Map<String, String>> _opponents = [
+    {
+      'name': 'The Philosopher',
+      'description': 'Deep logic, abstract reasoning, and endless "Why?"',
+      'icon': '🏛️',
+    },
+    {
+      'name': 'The Politician',
+      'description': 'Master of rhetoric, persuasion, and dodging questions.',
+      'icon': '🎙️',
+    },
+    {
+      'name': 'The Aggressor',
+      'description': 'Direct, blunt, and relentless in dismantling arguments.',
+      'icon': '⚔️',
+    },
+  ];
+
+  @override
+  void dispose() {
+    _resolutionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'MATCH SETUP',
+          style: GoogleFonts.publicSans(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle('RESOLUTION'),
+            const SizedBox(height: 12),
+            _buildResolutionInput(),
+            const SizedBox(height: 32),
+            _buildSectionTitle('YOUR STANCE'),
+            const SizedBox(height: 12),
+            _buildStanceSelector(),
+            const SizedBox(height: 32),
+            _buildSectionTitle('SELECT OPPONENT'),
+            const SizedBox(height: 12),
+            _buildOpponentSelector(),
+            const SizedBox(height: 48),
+            _buildEnterArenaButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.publicSans(
+        color: AppColors.secondaryText,
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 2.0,
+      ),
+    );
+  }
+
+  Widget _buildResolutionInput() {
+    return TextField(
+      controller: _resolutionController,
+      style: GoogleFonts.publicSans(color: AppColors.primaryText),
+      decoration: InputDecoration(
+        hintText: 'Enter Custom Resolution',
+        hintStyle: GoogleFonts.publicSans(color: AppColors.secondaryText.withOpacity(0.5)),
+        filled: true,
+        fillColor: AppColors.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.accent, width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStanceSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStanceButton('PRO', AppColors.accent),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildStanceButton('CON', Colors.blueGrey),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStanceButton(String stance, Color color) {
+    bool isSelected = _selectedStance == stance;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedStance = stance),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 60,
+        decoration: BoxDecoration(
+          color: isSelected ? color : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? color : AppColors.divider,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]
+              : [],
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          stance,
+          style: GoogleFonts.publicSans(
+            color: isSelected ? Colors.white : AppColors.secondaryText,
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOpponentSelector() {
+    return Column(
+      children: _opponents.map((opponent) {
+        bool isSelected = _selectedOpponent == opponent['name'];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedOpponent = opponent['name']),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.surface : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? AppColors.accent : AppColors.divider,
+                  width: 2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    opponent['icon']!,
+                    style: const TextStyle(fontSize: 32),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          opponent['name']!,
+                          style: GoogleFonts.publicSans(
+                            color: AppColors.primaryText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          opponent['description']!,
+                          style: GoogleFonts.publicSans(
+                            color: AppColors.secondaryText,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isSelected)
+                    const Icon(Icons.check_circle, color: AppColors.accent),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildEnterArenaButton() {
+    bool canProceed = _selectedOpponent != null;
+    return SizedBox(
+      width: double.infinity,
+      height: 64,
+      child: ElevatedButton(
+        onPressed: canProceed
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ArenaScreen()),
+                );
+              }
+            : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accent,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.divider,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: canProceed ? 8 : 0,
+        ),
+        child: Text(
+          'ENTER ARENA',
+          style: GoogleFonts.publicSans(
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: 2,
+          ),
+        ),
+      ),
+    );
+  }
+}
