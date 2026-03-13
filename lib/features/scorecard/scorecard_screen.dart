@@ -12,53 +12,168 @@ class ScorecardScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'MATCH RESULTS',
-          style: GoogleFonts.publicSans(
-            fontWeight: FontWeight.w900,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.secondaryText),
+          onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
         ),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.analytics_outlined,
-              size: 80,
-              color: AppColors.accent,
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Text(
-              'SCORECARD',
+              'YOU WON',
               style: GoogleFonts.publicSans(
-                color: AppColors.primaryText,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Analysis in progress...',
-              style: GoogleFonts.publicSans(
-                color: AppColors.secondaryText,
-                fontSize: 16,
+                color: AppColors.accent,
+                fontSize: 64,
+                fontWeight: FontWeight.w900,
+                fontStyle: FontStyle.italic,
+                height: 0.9,
               ),
             ),
             const SizedBox(height: 48),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.surface,
-                foregroundColor: AppColors.primaryText,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            _buildPerformanceScorecard(),
+            const SizedBox(height: 32),
+            _buildHighlightBlock(),
+            const SizedBox(height: 48),
+            _buildShareButton(context),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceScorecard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'PERFORMANCE SCORECARD',
+          style: GoogleFonts.publicSans(
+            color: AppColors.secondaryText,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 24),
+        _buildStatRow('Clarity', 0.88),
+        _buildStatRow('Logic', 0.94),
+        _buildStatRow('Rebuttals', 0.72),
+        _buildStatRow('Fallacies', 0.02, isInverse: true),
+      ],
+    );
+  }
+
+  Widget _buildStatRow(String label, double value, {bool isInverse = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.publicSans(
+                  color: AppColors.primaryText,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              child: const Text('BACK TO HOME'),
+              Text(
+                '${(value * 100).toInt().toString().padLeft(2, '0')}%',
+                style: GoogleFonts.publicSans(
+                  color: isInverse ? Colors.redAccent : AppColors.accent,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: value,
+              minHeight: 6,
+              backgroundColor: AppColors.surface,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isInverse ? Colors.redAccent : AppColors.accent,
+              ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightBlock() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'BEST ARGUMENT HIGHLIGHT',
+            style: GoogleFonts.publicSans(
+              color: AppColors.secondaryText,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '"The economic viability of decentralized grids hinges on democratization..."',
+            style: GoogleFonts.publicSans(
+              color: AppColors.primaryText,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShareButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 64,
+      child: ElevatedButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Results copied to clipboard!')),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accent,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 8,
+          shadowColor: AppColors.accent.withOpacity(0.5),
+        ),
+        child: Text(
+          'SHARE RESULTS',
+          style: GoogleFonts.publicSans(
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: 2,
+          ),
         ),
       ),
     );
