@@ -13,14 +13,13 @@ class AiDebaterService {
       if (apiKey == null || apiKey.isEmpty) {
         throw Exception('GEMINI_API_KEY not found in environment variables');
       }
+      
+      // Using 'gemini-1.5-flash' which is the standard model name.
+      // We'll move system instructions into the prompt to ensure maximum compatibility 
+      // with the backend API versioning.
       _model = GenerativeModel(
         model: 'gemini-1.5-flash',
         apiKey: apiKey,
-        systemInstruction: Content.system(
-          'You are a ruthless, highly logical debate opponent. '
-          'The user is arguing against you. '
-          'Keep your response to 2 short, punchy paragraphs max.'
-        ),
       );
     } catch (e) {
       debugPrint('AiDebaterService Initialization Error: $e');
@@ -30,7 +29,12 @@ class AiDebaterService {
 
   Future<String> getOpponentResponse(String userMessage) async {
     try {
-      final content = [Content.text(userMessage)];
+      // Injecting the ruthlessly logical persona directly into the prompt context.
+      final fullPrompt = 'System Instruction: You are a ruthless, highly logical debate opponent. '
+          'The user is arguing against you. Keep your response to 2 short, punchy paragraphs max.\n\n'
+          'User Argument: $userMessage';
+          
+      final content = [Content.text(fullPrompt)];
       final response = await _model.generateContent(content);
       return response.text ?? 'I have no rebuttal for such a weak argument.';
     } catch (e) {
