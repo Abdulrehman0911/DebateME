@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/services/ai_debater_service.dart';
 import '../scorecard/scorecard_screen.dart';
 
 class ArenaScreen extends StatefulWidget {
@@ -13,17 +14,62 @@ class ArenaScreen extends StatefulWidget {
 class _ArenaScreenState extends State<ArenaScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final AiDebaterService _aiService = AiDebaterService();
 
   final List<Map<String, dynamic>> _messages = [
     {
       'isAI': true,
-      'text': 'Your proposition rests on a flawed assumption. Defend it.',
-    },
-    {
-      'isAI': false,
-      'text': 'My assumption is based on historical data...',
+      'text': 'I am ready. Present your opening argument.',
     },
   ];
+
+  bool _isTyping = false;
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _handleSendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _isTyping) return;
+
+    setState(() {
+      _messages.add({'isAI': false, 'text': text});
+      _messageController.clear();
+      _isTyping = true;
+    });
+    _scrollToBottom();
+
+    try {
+      final response = await _aiService.getOpponentResponse(text);
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add({'isAI': true, 'text': response});
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add({
+            'isAI': true,
+            'text': 'Error: Failed to connect to the debate engine. Ensure your API key is valid.'
+          });
+        });
+        _scrollToBottom();
+      }
+    }
+  }
 
   void _showSteelManModal() {
     showDialog(
@@ -53,9 +99,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
                 size: 48,
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'STEEL MAN ROUND',
-                style: GoogleFonts.publicSans(
+                style: TextStyle(
                   color: AppColors.primaryText,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -64,10 +110,10 @@ class _ArenaScreenState extends State<ArenaScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Briefly accurately summarize your opponent\'s strongest argument before continuing. This earns you critical logic points.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.publicSans(
+                style: TextStyle(
                   color: AppColors.secondaryText,
                   fontSize: 14,
                   height: 1.5,
@@ -86,9 +132,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'ACCEPT CHALLENGE',
-                    style: GoogleFonts.publicSans(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -163,8 +209,11 @@ class _ArenaScreenState extends State<ArenaScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(20),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == _messages.length) {
+                  return _buildTypingIndicator();
+                }
                 final message = _messages[index];
                 return _buildChatBubble(message['text'], message['isAI']);
               },
@@ -172,6 +221,28 @@ class _ArenaScreenState extends State<ArenaScreen> {
           ),
           _buildInputBar(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C2C2C),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          'Opponent is typing...',
+          style: GoogleFonts.publicSans(
+            color: AppColors.secondaryText,
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
       ),
     );
   }
@@ -218,6 +289,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
           Expanded(
             child: TextField(
               controller: _messageController,
+              onSubmitted: (_) => _handleSendMessage(),
               style: GoogleFonts.publicSans(color: AppColors.primaryText),
               decoration: InputDecoration(
                 hintText: 'Type your argument...',
@@ -236,7 +308,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
           ),
           const SizedBox(width: 12),
           GestureDetector(
-            onTap: _showSteelManModal, // Temporary trigger for testing
+            onTap: _handleSendMessage,
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: const BoxDecoration(
