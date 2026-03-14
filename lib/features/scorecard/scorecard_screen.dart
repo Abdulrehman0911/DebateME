@@ -37,10 +37,121 @@ class ScorecardScreen extends StatelessWidget {
             _buildPerformanceScorecard(),
             const SizedBox(height: 32),
             _buildHighlightBlock(),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
+            _buildCoachButton(context),
+            const SizedBox(height: 16),
             _buildShareButton(context),
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCoachButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: OutlinedButton(
+        onPressed: () => _showCoachAnalysisModal(context),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.accent, width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          foregroundColor: AppColors.primaryText,
+        ),
+        child: Text(
+          '🤖 VIEW COACH ANALYSIS',
+          style: GoogleFonts.publicSans(
+            fontWeight: FontWeight.w800,
+            fontSize: 16,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCoachAnalysisModal(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.background,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: AppColors.divider, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.analytics_outlined, color: AppColors.accent, size: 28),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Coach Feedback',
+                    style: GoogleFonts.publicSans(
+                      color: AppColors.primaryText,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                ),
+                child: Text(
+                  'Logical Fallacies Detected: 1',
+                  style: GoogleFonts.publicSans(
+                    color: Colors.redAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'In Round 2, you used a Strawman fallacy by misrepresenting the opponent\'s view on centralization. Next time, address their core point directly.',
+                style: GoogleFonts.publicSans(
+                  color: AppColors.secondaryText,
+                  fontSize: 16,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'CLOSE',
+                    style: GoogleFonts.publicSans(
+                      color: AppColors.primaryText,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
