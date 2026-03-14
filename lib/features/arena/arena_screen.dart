@@ -58,6 +58,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
         _scrollToBottom();
       }
     } catch (e) {
+      debugPrint('ArenaScreen Error: $e');
       if (mounted) {
         setState(() {
           _isTyping = false;
