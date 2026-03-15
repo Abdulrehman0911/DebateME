@@ -289,11 +289,20 @@ class ScorecardScreen extends StatelessWidget {
       height: 64,
       child: ElevatedButton(
         onPressed: () async {
+          final clarity = evaluationData['clarityScore'] ?? 0;
+          final logic = evaluationData['logicScore'] ?? 0;
+          final rebuttal = evaluationData['rebuttalScore'] ?? 0;
+          final fallacyScore = evaluationData['fallacyScore'] ?? 0;
+          
+          final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
+          final bool isVictory = finalScore >= 65;
+
           final shareText = '🏛️ DEBATEME RESULTS\n\n'
-              'Status: ${((evaluationData['clarityScore'] ?? 0) + (evaluationData['logicScore'] ?? 0) + (evaluationData['rebuttalScore'] ?? 0)) / 3 >= 65 ? "Victory" : "Defeat"}\n'
-              'Clarity: ${evaluationData['clarityScore']}%\n'
-              'Logic: ${evaluationData['logicScore']}%\n'
-              'Rebuttals: ${evaluationData['rebuttalScore']}%\n\n'
+              'Status: ${isVictory ? "Victory" : "Defeat"}\n'
+              'Clarity: $clarity%\n'
+              'Logic: $logic%\n'
+              'Rebuttals: $rebuttal%\n'
+              'Fallacies: $fallacyScore%\n\n'
               'Coach Feedback: ${evaluationData['coachFeedback']}\n\n'
               'Play at DebateMe!';
 
