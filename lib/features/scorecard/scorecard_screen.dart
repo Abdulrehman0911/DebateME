@@ -3,10 +3,28 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
 class ScorecardScreen extends StatelessWidget {
-  const ScorecardScreen({super.key});
+  final Map<String, dynamic> evaluationData;
+
+  const ScorecardScreen({
+    super.key,
+    required this.evaluationData,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Fallback values in case keys are missing
+    final clarity = (evaluationData['clarityScore'] ?? 0) / 100.0;
+    final logic = (evaluationData['logicScore'] ?? 0) / 100.0;
+    final rebuttal = (evaluationData['rebuttalScore'] ?? 0) / 100.0;
+    final fallacyScore = evaluationData['fallacyScore'] ?? 0;
+    final fallacies = fallacyScore / 100.0;
+    
+    // Determine win/loss based on average score (simplified)
+    final avgScore = (evaluationData['clarityScore'] + 
+                     evaluationData['logicScore'] + 
+                     evaluationData['rebuttalScore']) / 3;
+    final hasWon = avgScore >= 60;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -24,9 +42,9 @@ class ScorecardScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             Text(
-              'YOU WON',
+              hasWon ? 'YOU WON' : 'STALEMATE',
               style: GoogleFonts.publicSans(
-                color: AppColors.accent,
+                color: hasWon ? AppColors.accent : Colors.blueGrey,
                 fontSize: 64,
                 fontWeight: FontWeight.w900,
                 fontStyle: FontStyle.italic,
@@ -34,9 +52,9 @@ class ScorecardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 48),
-            _buildPerformanceScorecard(),
+            _buildPerformanceScorecard(clarity, logic, rebuttal, fallacies),
             const SizedBox(height: 32),
-            _buildHighlightBlock(),
+            _buildHighlightBlock(evaluationData['bestArgumentHighlight'] ?? 'No highlight available.'),
             const SizedBox(height: 32),
             _buildCoachButton(context),
             const SizedBox(height: 16),
@@ -111,7 +129,7 @@ class ScorecardScreen extends StatelessWidget {
                   border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
                 ),
                 child: Text(
-                  'Logical Fallacies Detected: 1',
+                  'Logic Integrity Sub-score: ${evaluationData['fallacyScore']}%',
                   style: GoogleFonts.publicSans(
                     color: Colors.redAccent,
                     fontSize: 12,
@@ -121,7 +139,7 @@ class ScorecardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'In Round 2, you used a Strawman fallacy by misrepresenting the opponent\'s view on centralization. Next time, address their core point directly.',
+                evaluationData['coachFeedback'] ?? 'Keep practicing to improve your debating skills!',
                 style: GoogleFonts.publicSans(
                   color: AppColors.secondaryText,
                   fontSize: 16,
@@ -157,7 +175,7 @@ class ScorecardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPerformanceScorecard() {
+  Widget _buildPerformanceScorecard(double clarity, double logic, double rebuttal, double fallacies) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -171,10 +189,10 @@ class ScorecardScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        _buildStatRow('Clarity', 0.88),
-        _buildStatRow('Logic', 0.94),
-        _buildStatRow('Rebuttals', 0.72),
-        _buildStatRow('Fallacies', 0.02, isInverse: true),
+        _buildStatRow('Clarity', clarity),
+        _buildStatRow('Logic', logic),
+        _buildStatRow('Rebuttals', rebuttal),
+        _buildStatRow('Fallacies (Detected)', fallacies, isInverse: true),
       ],
     );
   }
@@ -222,7 +240,7 @@ class ScorecardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHighlightBlock() {
+  Widget _buildHighlightBlock(String highlight) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -245,7 +263,7 @@ class ScorecardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '"The economic viability of decentralized grids hinges on democratization..."',
+            '"$highlight"',
             style: GoogleFonts.publicSans(
               color: AppColors.primaryText,
               fontSize: 18,

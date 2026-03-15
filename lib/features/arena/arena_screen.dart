@@ -39,6 +39,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
   }
 
   bool _isTyping = false;
+  int _userMessageCount = 0;
+  bool _isMatchOver = false;
+  bool _isAnalyzing = false;
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -60,6 +63,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
       _messages.add({'isAI': false, 'text': text});
       _messageController.clear();
       _isTyping = true;
+      _userMessageCount++;
     });
     _scrollToBottom();
 
@@ -74,6 +78,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
         setState(() {
           _isTyping = false;
           _messages.add({'isAI': true, 'text': response});
+          if (_userMessageCount >= 4) {
+            _isMatchOver = true;
+          }
         });
         _scrollToBottom();
       }
@@ -116,7 +123,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Opening Argument: 1 of 4',
+              'Round ${_userMessageCount.clamp(1, 4)} of 4',
               style: GoogleFonts.publicSans(
                 color: AppColors.primaryText,
                 fontSize: 16,
@@ -163,10 +170,101 @@ class _ArenaScreenState extends State<ArenaScreen> {
               },
             ),
           ),
-          _buildInputBar(),
+          _isMatchOver ? _buildFinishButton() : _buildInputBar(),
         ],
       ),
+      if (_isAnalyzing) _buildLoadingOverlay(),
     );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.8),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: AppColors.accent),
+            const SizedBox(height: 24),
+            Text(
+              'The Coach is analyzing your debate...',
+              style: GoogleFonts.publicSans(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFinishButton() {
+    return Container(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 24),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.divider)),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: _handleFinishMatch,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 8,
+          ),
+          child: Text(
+            'FINISH & GET SCORE',
+            style: GoogleFonts.publicSans(
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleFinishMatch() async {
+    setState(() => _isAnalyzing = true);
+
+    try {
+      final evaluation = await _aiService.evaluateDebate(
+        chatHistory: _messages,
+        topic: widget.topic,
+        userStance: widget.userStance,
+      );
+
+      if (mounted) {
+        setState(() => _isAnalyzing = false);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScorecardScreen(evaluationData: evaluation),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error evaluating match: $e');
+      if (mounted) {
+        setState(() => _isAnalyzing = false);
+        // Navigate anyway with default/empty data or show error
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ScorecardScreen(evaluationData: {}),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildTypingIndicator() {
