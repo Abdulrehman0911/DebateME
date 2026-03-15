@@ -5,7 +5,16 @@ import '../../core/services/ai_debater_service.dart';
 import '../scorecard/scorecard_screen.dart';
 
 class ArenaScreen extends StatefulWidget {
-  const ArenaScreen({super.key});
+  final String topic;
+  final String userStance;
+  final String opponentPersona;
+
+  const ArenaScreen({
+    super.key,
+    this.topic = 'Centralization vs. Decentralization',
+    this.userStance = 'Pro-Decentralization',
+    this.opponentPersona = 'Aggressor',
+  });
 
   @override
   State<ArenaScreen> createState() => _ArenaScreenState();
@@ -16,12 +25,18 @@ class _ArenaScreenState extends State<ArenaScreen> {
   final ScrollController _scrollController = ScrollController();
   final AiDebaterService _aiService = AiDebaterService();
 
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'isAI': true,
-      'text': 'I am ready. Present your opening argument.',
-    },
-  ];
+  late final List<Map<String, dynamic>> _messages;
+
+  @override
+  void initState() {
+    super.initState();
+    _messages = [
+      {
+        'isAI': true,
+        'text': 'I am the ${widget.opponentPersona}. Let us debate ${widget.topic}. Make your opening move.',
+      },
+    ];
+  }
 
   bool _isTyping = false;
 
@@ -49,7 +64,12 @@ class _ArenaScreenState extends State<ArenaScreen> {
     _scrollToBottom();
 
     try {
-      final response = await _aiService.getOpponentResponse(text);
+      final response = await _aiService.getOpponentResponse(
+        topic: widget.topic,
+        userStance: widget.userStance,
+        opponentPersona: widget.opponentPersona,
+        userMessage: text,
+      );
       if (mounted) {
         setState(() {
           _isTyping = false;
@@ -104,7 +124,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
               ),
             ),
             Text(
-              'User vs. Aggressor',
+              'User vs. ${widget.opponentPersona}',
               style: GoogleFonts.publicSans(
                 color: AppColors.accent,
                 fontSize: 12,

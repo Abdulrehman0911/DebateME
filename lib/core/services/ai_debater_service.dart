@@ -18,7 +18,7 @@ class AiDebaterService {
       // We'll move system instructions into the prompt to ensure maximum compatibility 
       // with the backend API versioning.
       _model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: apiKey,
       );
     } catch (e) {
@@ -27,11 +27,18 @@ class AiDebaterService {
     }
   }
 
-  Future<String> getOpponentResponse(String userMessage) async {
+  Future<String> getOpponentResponse({
+    required String topic,
+    required String userStance,
+    required String opponentPersona,
+    required String userMessage,
+  }) async {
     try {
-      // Injecting the ruthlessly logical persona directly into the prompt context.
-      final fullPrompt = 'System Instruction: You are a ruthless, highly logical debate opponent. '
-          'The user is arguing against you. Keep your response to 2 short, punchy paragraphs max.\n\n'
+      // Injecting the context-aware personality directly into the prompt context.
+      final fullPrompt = 'System Instruction: You are an expert debater roleplaying as the $opponentPersona. '
+          'We are debating the topic: $topic. The user is taking the $userStance stance. '
+          'You must fiercely argue the opposite side. Stay completely in character as the $opponentPersona. '
+          'Keep your responses punchy and under 2 paragraphs.\n\n'
           'User Argument: $userMessage';
           
       final content = [Content.text(fullPrompt)];
