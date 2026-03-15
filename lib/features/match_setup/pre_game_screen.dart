@@ -236,7 +236,17 @@ class _PreGameScreenState extends State<PreGameScreen> {
             ? () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ArenaScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => ArenaScreen(
+                      topic: _resolutionController.text.isEmpty
+                          ? 'Centralization vs. Decentralization'
+                          : _resolutionController.text,
+                      userStance: _selectedStance == 'PRO'
+                          ? 'Pro-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}'
+                          : 'Anti-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}',
+                      opponentPersona: _selectedOpponent!,
+                    ),
+                  ),
                 );
               }
             : null,

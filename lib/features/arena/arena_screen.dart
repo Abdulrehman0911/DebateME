@@ -11,9 +11,9 @@ class ArenaScreen extends StatefulWidget {
 
   const ArenaScreen({
     super.key,
-    this.topic = 'Centralization vs. Decentralization',
-    this.userStance = 'Pro-Decentralization',
-    this.opponentPersona = 'Aggressor',
+    required this.topic,
+    required this.userStance,
+    required this.opponentPersona,
   });
 
   @override
