@@ -64,7 +64,14 @@ class _ArenaScreenState extends State<ArenaScreen> {
     } catch (e) {
       debugPrint('ArenaScreen Init Error: $e');
       if (mounted) {
-        setState(() => _isTyping = false);
+        setState(() {
+          _isTyping = false;
+          _messages.add({
+            'isAI': true,
+            'text': 'Error: Failed to connect to the AI. Please check your connection and restart the match.'
+          });
+        });
+        _scrollToBottom();
       }
     }
   }
@@ -122,7 +129,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
           _isTyping = false;
           _messages.add({
             'isAI': true,
-            'text': 'Error: Failed to connect to the debate engine. Ensure your API key is valid.'
+            'text': 'Error: Failed to connect to the AI. Please check your connection and try sending your message again.'
           });
         });
         _scrollToBottom();
@@ -188,16 +195,14 @@ class _ArenaScreenState extends State<ArenaScreen> {
                 child: ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.all(20),
-                  itemCount: _messages.length + (_isTyping ? 1 : 0),
+                  itemCount: _messages.length,
                   itemBuilder: (context, index) {
-                    if (index == _messages.length) {
-                      return _buildTypingIndicator();
-                    }
                     final message = _messages[index];
                     return _buildChatBubble(message['text'], message['isAI']);
                   },
                 ),
               ),
+              if (_isTyping) _buildTypingIndicator(),
               _isMatchOver ? _buildFinishButton() : _buildInputBar(),
             ],
           ),
@@ -337,23 +342,29 @@ class _ArenaScreenState extends State<ArenaScreen> {
   }
 
   Widget _buildTypingIndicator() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2C2C2C),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          'Opponent is typing...',
-          style: GoogleFonts.publicSans(
-            color: AppColors.secondaryText,
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      color: AppColors.background.withOpacity(0.5),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.accent,
+            ),
           ),
-        ),
+          const SizedBox(width: 12),
+          Text(
+            'The AI is typing...',
+            style: GoogleFonts.publicSans(
+              color: AppColors.secondaryText,
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
       ),
     );
   }
