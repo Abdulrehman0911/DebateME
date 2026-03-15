@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 
 class ScorecardScreen extends StatelessWidget {
@@ -12,18 +13,23 @@ class ScorecardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fallback values in case keys are missing
-    final clarity = (evaluationData['clarityScore'] ?? 0) / 100.0;
-    final logic = (evaluationData['logicScore'] ?? 0) / 100.0;
-    final rebuttal = (evaluationData['rebuttalScore'] ?? 0) / 100.0;
-    final fallacyScore = evaluationData['fallacyScore'] ?? 0;
-    final fallacies = fallacyScore / 100.0;
-    
-    // Determine win/loss based on average score (simplified)
-    final avgScore = (evaluationData['clarityScore'] + 
-                     evaluationData['logicScore'] + 
-                     evaluationData['rebuttalScore']) / 3;
-    final hasWon = avgScore >= 60;
+    if (evaluationData.isEmpty) {
+      return _buildForfeitState(context);
+    }
+
+    // New Win/Loss Formula: ((clarity + logic + rebuttals) / 3) - (fallacies * 0.5)
+    final clarity = (evaluationData['clarityScore'] ?? 0);
+    final logic = (evaluationData['logicScore'] ?? 0);
+    final rebuttal = (evaluationData['rebuttalScore'] ?? 0);
+    final fallacyScore = (evaluationData['fallacyScore'] ?? 0);
+
+    final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
+    final bool hasWon = finalScore >= 65;
+
+    final clarityRatio = clarity / 100.0;
+    final logicRatio = logic / 100.0;
+    final rebuttalRatio = rebuttal / 100.0;
+    final fallaciesRatio = fallacyScore / 100.0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -42,9 +48,9 @@ class ScorecardScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             Text(
-              hasWon ? 'YOU WON' : 'STALEMATE',
+              hasWon ? 'YOU WON' : 'DEFEAT',
               style: GoogleFonts.publicSans(
-                color: hasWon ? AppColors.accent : Colors.blueGrey,
+                color: hasWon ? AppColors.accent : Colors.redAccent,
                 fontSize: 64,
                 fontWeight: FontWeight.w900,
                 fontStyle: FontStyle.italic,
@@ -52,7 +58,7 @@ class ScorecardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 48),
-            _buildPerformanceScorecard(clarity, logic, rebuttal, fallacies),
+            _buildPerformanceScorecard(clarityRatio, logicRatio, rebuttalRatio, fallaciesRatio),
             const SizedBox(height: 32),
             _buildHighlightBlock(evaluationData['bestArgumentHighlight'] ?? 'No highlight available.'),
             const SizedBox(height: 32),
@@ -282,10 +288,25 @@ class ScorecardScreen extends StatelessWidget {
       width: double.infinity,
       height: 64,
       child: ElevatedButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Results copied to clipboard!')),
-          );
+        onPressed: () async {
+          final shareText = '🏛️ DEBATEME RESULTS\n\n'
+              'Status: ${((evaluationData['clarityScore'] ?? 0) + (evaluationData['logicScore'] ?? 0) + (evaluationData['rebuttalScore'] ?? 0)) / 3 >= 65 ? "Victory" : "Defeat"}\n'
+              'Clarity: ${evaluationData['clarityScore']}%\n'
+              'Logic: ${evaluationData['logicScore']}%\n'
+              'Rebuttals: ${evaluationData['rebuttalScore']}%\n\n'
+              'Coach Feedback: ${evaluationData['coachFeedback']}\n\n'
+              'Play at DebateMe!';
+
+          await Clipboard.setData(ClipboardData(text: shareText));
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Results copied to clipboard!'),
+                backgroundColor: AppColors.accent,
+              ),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
@@ -303,6 +324,42 @@ class ScorecardScreen extends StatelessWidget {
             fontSize: 18,
             letterSpacing: 2,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForfeitState(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: AppColors.secondaryText),
+          onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.flag_outlined, size: 80, color: AppColors.secondaryText),
+            const SizedBox(height: 24),
+            Text(
+              'MATCH FORFEITED',
+              style: GoogleFonts.publicSans(
+                color: AppColors.primaryText,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No scores were calculated.',
+              style: GoogleFonts.publicSans(color: AppColors.secondaryText),
+            ),
+          ],
         ),
       ),
     );

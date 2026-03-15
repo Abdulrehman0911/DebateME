@@ -31,11 +31,42 @@ class _ArenaScreenState extends State<ArenaScreen> {
   void initState() {
     super.initState();
     _messages = [
-      {
-        'isAI': true,
-        'text': 'I am the ${widget.opponentPersona}. Let us debate ${widget.topic}. Make your opening move.',
-      },
+      if (widget.userStance.toLowerCase().contains('pro'))
+        {
+          'isAI': true,
+          'text':
+              'I am the ${widget.opponentPersona}. You are defending the PRO stance on ${widget.topic}. Make your opening argument.',
+        },
     ];
+
+    if (widget.userStance.toLowerCase().contains('anti') ||
+        widget.userStance.toLowerCase().contains('con')) {
+      _startAiDebate();
+    }
+  }
+
+  Future<void> _startAiDebate() async {
+    setState(() => _isTyping = true);
+    try {
+      final response = await _aiService.getOpponentResponse(
+        topic: widget.topic,
+        userStance: widget.userStance,
+        opponentPersona: widget.opponentPersona,
+        userMessage: '[AI starts: Make your opening argument for the PRO side.]',
+      );
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add({'isAI': true, 'text': response});
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      debugPrint('ArenaScreen Init Error: $e');
+      if (mounted) {
+        setState(() => _isTyping = false);
+      }
+    }
   }
 
   bool _isTyping = false;
@@ -144,36 +175,35 @@ class _ArenaScreenState extends State<ArenaScreen> {
           IconButton(
             icon: const Icon(Icons.exit_to_app, color: AppColors.accent),
             tooltip: 'End Match',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ScorecardScreen()),
-              );
-            },
+            onPressed: _showForfeitDialog,
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(20),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length) {
-                  return _buildTypingIndicator();
-                }
-                final message = _messages[index];
-                return _buildChatBubble(message['text'], message['isAI']);
-              },
-            ),
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(20),
+                  itemCount: _messages.length + (_isTyping ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _messages.length) {
+                      return _buildTypingIndicator();
+                    }
+                    final message = _messages[index];
+                    return _buildChatBubble(message['text'], message['isAI']);
+                  },
+                ),
+              ),
+              _isMatchOver ? _buildFinishButton() : _buildInputBar(),
+            ],
           ),
-          _isMatchOver ? _buildFinishButton() : _buildInputBar(),
+          if (_isAnalyzing) _buildLoadingOverlay(),
         ],
       ),
-      if (_isAnalyzing) _buildLoadingOverlay(),
     );
   }
 
@@ -267,6 +297,45 @@ class _ArenaScreenState extends State<ArenaScreen> {
     }
   }
 
+  void _showForfeitDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Forfeit Match?',
+          style: GoogleFonts.publicSans(
+            color: AppColors.primaryText,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Your progress will not be saved.',
+          style: GoogleFonts.publicSans(color: AppColors.secondaryText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'CANCEL',
+              style: GoogleFonts.publicSans(color: AppColors.secondaryText),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Exit Arena
+            },
+            child: const Text(
+              'FORFEIT',
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTypingIndicator() {
     return Align(
       alignment: Alignment.centerLeft,
@@ -331,7 +400,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
           Expanded(
             child: TextField(
               controller: _messageController,
-              onSubmitted: (_) => _handleSendMessage(),
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
               style: GoogleFonts.publicSans(color: AppColors.primaryText),
               decoration: InputDecoration(
                 hintText: 'Type your argument...',
