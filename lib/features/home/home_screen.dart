@@ -397,7 +397,13 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ArenaScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ArenaScreen(
+                      topic: 'Social Media is Harmful',
+                      userStance: 'Pro-Social Media',
+                      opponentPersona: 'Philosopher',
+                    ),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
