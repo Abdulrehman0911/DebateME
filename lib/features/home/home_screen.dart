@@ -165,8 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.publicSans(
                 color: AppColors.primaryText,
                 fontWeight: FontWeight.w900,
-                fontSize: 20,
+                fontSize: 22,
                 fontStyle: FontStyle.italic,
+                letterSpacing: -0.5,
               ),
             ),
           ],
@@ -252,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Edit Profile',
                   style: GoogleFonts.publicSans(
                     color: AppColors.primaryText,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
                 ),
@@ -331,27 +332,25 @@ class _HomeScreenState extends State<HomeScreen> {
             letterSpacing: 2,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
               child: _buildStatCard(
                 'Win Rate',
                 winRate,
-                '+5.2%',
-                Icons.trending_up,
-                Colors.green,
+                trend: '+5.2%',
+                icon: Icons.trending_up,
+                color: Colors.greenAccent,
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: _buildStatCard(
-                'Current Streak',
-                '$streak',
-                '',
-                Icons.bolt,
-                AppColors.accent,
+                'Active Streaks',
+                streak.toString(),
                 showGraph: true,
+                color: AppColors.accent,
               ),
             ),
           ],
@@ -360,29 +359,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, String trend, IconData icon, Color color, {bool showGraph = false}) {
+  Widget _buildStatCard(String title, String value, {String trend = '', IconData icon = Icons.trending_up, Color color = AppColors.accent, bool showGraph = false}) {
     return Container(
-      height: 110,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: AppColors.divider.withOpacity(0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: GoogleFonts.publicSans(
               color: AppColors.secondaryText,
               fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: 12),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,20 +391,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     value,
                     style: GoogleFonts.publicSans(
                       color: AppColors.primaryText,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                  if (trend.isNotEmpty && title == 'Win Rate')
+                  if (trend.isNotEmpty)
                     Row(
                       children: [
-                        Icon(icon, size: 14, color: color),
+                        Icon(icon, size: 14, color: Colors.greenAccent),
                         const SizedBox(width: 4),
                         Text(
                           trend,
                           style: GoogleFonts.publicSans(
-                            color: color,
-                            fontSize: 10,
+                            color: Colors.greenAccent,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -413,11 +413,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               if (showGraph)
-                SizedBox(
-                  width: 40,
-                  height: 20,
-                  child: CustomPaint(
-                    painter: SparklinePainter(color: color),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 16),
+                    height: 48,
+                    child: CustomPaint(
+                      painter: SparklinePainter(color: color),
+                    ),
                   ),
                 ),
             ],
@@ -432,14 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accent.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        border: Border.all(color: AppColors.divider.withOpacity(0.5)),
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -472,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Icon(Icons.bolt, color: AppColors.accent, size: 20),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -482,19 +477,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildChallengeLabel('TOPIC'),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
                       topic.toUpperCase(),
                       style: GoogleFonts.publicSans(
                         color: AppColors.primaryText,
-                        fontSize: 22,
+                        fontSize: 24,
                         fontWeight: FontWeight.w900,
                         fontStyle: FontStyle.italic,
                         height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildChallengeLabel('STANCE'),
+                    const SizedBox(height: 4),
                     Text(
                       'Defend $stance stance',
                       style: GoogleFonts.publicSans(
@@ -513,29 +509,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     _buildChallengeLabel('CHALLENGER'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      width: 80,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         color: AppColors.background,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.divider),
                       ),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: AppColors.surface,
-                            child: Icon(Icons.psychology, color: AppColors.accent),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.psychology, color: AppColors.accent, size: 24),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             persona.split(' ').last,
                             style: GoogleFonts.publicSans(
                               color: AppColors.primaryText,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
@@ -545,10 +547,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 52,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -563,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.surface,
+                backgroundColor: Colors.transparent,
                 foregroundColor: AppColors.accent,
                 side: const BorderSide(color: AppColors.accent, width: 2),
                 shape: RoundedRectangleBorder(
@@ -575,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'ACCEPT CHALLENGE',
                 style: GoogleFonts.publicSans(
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.5,
                   fontSize: 14,
                 ),
               ),
@@ -614,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
-          height: 80,
+          height: 64,
           child: ElevatedButton(
             onPressed: () {
               Navigator.push(
@@ -623,25 +625,24 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
+              backgroundColor: const Color(0xFFFF4800), // Vibrant Red-Orange
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               ),
-              elevation: 12,
-              shadowColor: AppColors.accent.withOpacity(0.6),
+              elevation: 4,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.add_rounded, size: 32),
+                const Icon(Icons.add, size: 24, color: Colors.white),
                 const SizedBox(width: 12),
                 Text(
                   'START CUSTOM MATCH',
                   style: GoogleFonts.publicSans(
                     fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                    letterSpacing: 1.5,
+                    fontSize: 18,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ],
@@ -699,11 +700,15 @@ class _HomeScreenState extends State<HomeScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: _buildActivityTile(
-                  '${record.isVictory ? "Victory" : "Defeat"} vs ${record.opponentPersona}',
+                  '${record.result} vs ${record.opponentPersona}',
                   '${record.topic} • ${_getTimeAgo(record.date)}',
-                  record.isVictory ? Icons.emoji_events : Icons.close,
-                  record.isVictory ? Colors.green : Colors.redAccent,
-                  '${record.isVictory ? "+" : "-"}${record.eloChange}',
+                  record.result == 'Victory' 
+                      ? Icons.emoji_events 
+                      : (record.result == 'Draw' ? Icons.history : Icons.close),
+                  record.result == 'Victory' 
+                      ? Colors.green 
+                      : (record.result == 'Draw' ? Colors.orange : Colors.redAccent),
+                  '${record.result == 'Victory' ? "+" : (record.result == 'Defeat' ? "-" : "")}${record.eloChange}',
                 ),
               );
             }).toList(),
@@ -725,12 +730,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: color, size: 20),
+              child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -817,7 +822,7 @@ class _HomeDashboard extends StatelessWidget {
         
         // Calculations
         final int totalMatches = matches.length;
-        final int totalWins = matches.where((m) => m.isVictory).length;
+        final int totalWins = matches.where((m) => m.result == 'Victory').length;
         final String winRate = totalMatches == 0 ? '0%' : '${((totalWins / totalMatches) * 100).toInt()}%';
         
         int elo = 1000;
@@ -825,17 +830,13 @@ class _HomeDashboard extends StatelessWidget {
         
         // Elo calculation
         for (var m in matches) {
-          if (m.isVictory) {
-            elo += 25;
-          } else {
-            elo -= 15;
-          }
+          elo += m.eloChange;
         }
 
         // Streak calculation (backwards)
         final reversedMatches = matches.reversed;
         for (var m in reversedMatches) {
-          if (m.isVictory) {
+          if (m.result == 'Victory') {
             currentStreak++;
           } else {
             break;
@@ -901,15 +902,24 @@ class SparklinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color
+      ..color = color.withOpacity(0.8)
       ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-    path.moveTo(0, size.height * 0.8);
-    path.quadraticBezierTo(size.width * 0.2, size.height * 0.2, size.width * 0.4, size.height * 0.6);
-    path.quadraticBezierTo(size.width * 0.6, size.height * 0.9, size.width * 0.8, size.height * 0.1);
-    path.lineTo(size.width, size.height * 0.4);
+    // A more natural looking sparkline
+    path.moveTo(0, size.height * 0.7);
+    path.cubicTo(
+      size.width * 0.2, size.height * 0.8,
+      size.width * 0.3, size.height * 0.4,
+      size.width * 0.5, size.height * 0.6,
+    );
+    path.cubicTo(
+      size.width * 0.7, size.height * 0.8,
+      size.width * 0.8, size.height * 0.1,
+      size.width, size.height * 0.3,
+    );
 
     canvas.drawPath(path, paint);
   }

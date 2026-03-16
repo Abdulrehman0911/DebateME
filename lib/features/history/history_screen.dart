@@ -77,8 +77,12 @@ class HistoryScreen extends StatelessWidget {
   }
 
   Widget _buildHistoryTile(MatchRecord record) {
-    final color = record.isVictory ? Colors.green : Colors.redAccent;
-    final icon = record.isVictory ? Icons.emoji_events : Icons.close;
+    final color = record.result == 'Victory' 
+        ? Colors.green 
+        : (record.result == 'Draw' ? Colors.orange : Colors.redAccent);
+    final icon = record.result == 'Victory' 
+        ? Icons.emoji_events 
+        : (record.result == 'Draw' ? Icons.history : Icons.close);
     final timeAgo = _getTimeAgo(record.date);
 
     return Container(
@@ -104,7 +108,7 @@ class HistoryScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${record.isVictory ? "Victory" : "Defeat"} vs ${record.opponentPersona}',
+                  '${record.result} vs ${record.opponentPersona}',
                   style: GoogleFonts.publicSans(
                     color: AppColors.primaryText,
                     fontSize: 14,
@@ -126,7 +130,7 @@ class HistoryScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${record.isVictory ? "+" : "-"}${record.eloChange}',
+                '${record.result == 'Victory' ? "+" : (record.result == 'Defeat' ? "-" : "")}${record.eloChange}',
                 style: GoogleFonts.publicSans(
                   color: color,
                   fontSize: 14,

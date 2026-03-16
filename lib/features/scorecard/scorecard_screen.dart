@@ -36,14 +36,27 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
     final fallacyScore = widget.evaluationData['fallacyScore'] ?? 0;
 
     final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
-    final bool hasWon = finalScore >= 65;
+    
+    String result;
+    int eloChange;
+    if (finalScore >= 65) {
+      result = 'Victory';
+      eloChange = 24;
+    } else if (finalScore >= 50) {
+      result = 'Draw';
+      eloChange = 0;
+    } else {
+      result = 'Defeat';
+      eloChange = -15;
+    }
 
     final record = MatchRecord(
       topic: widget.evaluationData['topic'] ?? 'Custom Match',
       userStance: widget.evaluationData['userStance'] ?? 'User Stance',
       opponentPersona: widget.evaluationData['opponentPersona'] ?? 'AI Debater',
-      isVictory: hasWon,
+      result: result,
       date: DateTime.now(),
+      eloChange: eloChange,
     );
 
     final box = Hive.box('match_history');
@@ -69,7 +82,19 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
     final fallacyScore = (widget.evaluationData['fallacyScore'] ?? 0);
 
     final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
-    final bool hasWon = finalScore >= 65;
+    
+    String status;
+    Color statusColor;
+    if (finalScore >= 65) {
+      status = 'YOU WON';
+      statusColor = AppColors.accent;
+    } else if (finalScore >= 50) {
+      status = 'DRAW';
+      statusColor = Colors.orangeAccent;
+    } else {
+      status = 'DEFEAT';
+      statusColor = Colors.redAccent;
+    }
 
     final clarityRatio = clarity / 100.0;
     final logicRatio = logic / 100.0;
@@ -93,9 +118,9 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
           children: [
             const SizedBox(height: 20),
             Text(
-              hasWon ? 'YOU WON' : 'DEFEAT',
+              status,
               style: GoogleFonts.publicSans(
-                color: hasWon ? AppColors.accent : Colors.redAccent,
+                color: statusColor,
                 fontSize: 64,
                 fontWeight: FontWeight.w900,
                 fontStyle: FontStyle.italic,
@@ -340,10 +365,17 @@ class _ScorecardScreenState extends State<ScorecardScreen> {
           final fallacyScore = widget.evaluationData['fallacyScore'] ?? 0;
           
           final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
-          final bool isVictory = finalScore >= 65;
+          String status;
+          if (finalScore >= 65) {
+            status = 'Victory';
+          } else if (finalScore >= 50) {
+            status = 'Draw';
+          } else {
+            status = 'Defeat';
+          }
 
           final shareText = '🏛️ DEBATEME RESULTS\n\n'
-              'Status: ${isVictory ? "Victory" : "Defeat"}\n'
+              'Status: $status\n'
               'Clarity: $clarity%\n'
               'Logic: $logic%\n'
               'Rebuttals: $rebuttal%\n'

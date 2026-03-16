@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand Colors
-  static const Color background = Color(0xFF121212); // Matte Graphite
-  static const Color primaryText = Color(0xFFF5F5F5); // Off-White
-  static const Color accent = Color(0xFFFF4D00); // Matte Orange
+  static const Color background = Color(0xFF0F0F0F); // Deeper Black
+  static const Color primaryText = Color(0xFFFFFFFF);
+  static const Color accent = Color(0xFFFF521B); // More vibrant orange
   
   // Secondary Colors
-  static const Color secondaryText = Color(0xFF888888);
-  static const Color surface = Color(0xFF1E1E1E);
-  static const Color divider = Color(0xFF2C2C2C);
+  static const Color secondaryText = Color(0xFFA0A0A0);
+  static const Color surface = Color(0xFF1A1A1A); // Sleet Grey
+  static const Color divider = Color(0xFF262626);
   
   // Premium Glow
   static const Color premiumBlue = Color(0xFF00D1FF); // Electric Cyan
