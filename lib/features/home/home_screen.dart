@@ -1,11 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/models/match_record.dart';
 import '../match_setup/pre_game_screen.dart';
 import '../arena/arena_screen.dart';
+import '../history/history_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      _HomeDashboard(onViewAll: () => setState(() => _currentIndex = 2)),
+      const ComingSoonScreen(title: 'LEAGUES'),
+      const HistoryScreen(),
+      const ComingSoonScreen(title: 'PROFILE'),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: _buildBottomNav(context),
+    );
+  }
+
+  Widget _buildBottomNav(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(top: 12, bottom: 24, left: 32, right: 32),
+      decoration: BoxDecoration(
+        color: AppColors.background.withOpacity(0.9),
+        border: const Border(top: BorderSide(color: AppColors.divider)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildNavItem(Icons.home, 'HOME', index: 0),
+          _buildNavItem(Icons.emoji_events_outlined, 'LEAGUES', index: 1),
+          _buildNavItem(Icons.history, 'HISTORY', index: 2),
+          _buildNavItem(Icons.person_outline, 'PROFILE', index: 3),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, {required int index}) {
+    final bool isSelected = _currentIndex == index;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isSelected ? AppColors.accent : AppColors.secondaryText,
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.publicSans(
+              color: isSelected ? AppColors.accent : AppColors.secondaryText,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -21,38 +105,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              _buildTopBar(context),
-              const SizedBox(height: 32),
-              _buildProfileHeader(context),
-              const SizedBox(height: 32),
-              _buildPerformanceHub(),
-              const SizedBox(height: 32),
-              _buildDailyChallenge(context),
-              const SizedBox(height: 32),
-              _buildCustomMatchSection(context),
-              const SizedBox(height: 32),
-              _buildActivityFeed(),
-              const SizedBox(height: 100), // Space for bottom nav
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(context),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
+  Widget buildTopBar(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -99,7 +152,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget buildProfileHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -162,7 +215,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPerformanceHub() {
+  Widget buildPerformanceHub() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -271,7 +324,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDailyChallenge(BuildContext context) {
+  Widget buildDailyChallenge(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -442,7 +495,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCustomMatchSection(BuildContext context) {
+  Widget buildCustomMatchSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -496,7 +549,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityFeed() {
+  Widget buildActivityFeed(BuildContext context, VoidCallback onViewAll) {
     return Column(
       children: [
         Row(
@@ -510,31 +563,53 @@ class HomeScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              'View All',
-              style: GoogleFonts.publicSans(
-                color: AppColors.accent,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            GestureDetector(
+              onTap: onViewAll,
+              child: Text(
+                'View All',
+                style: GoogleFonts.publicSans(
+                  color: AppColors.accent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        _buildActivityTile(
-          'Victory vs @TechnoWizard',
-          'AI in Healthcare • 2h ago',
-          Icons.emoji_events,
-          Colors.green,
-          '+24',
-        ),
-        const SizedBox(height: 12),
-        _buildActivityTile(
-          'Draw vs @LogicLover',
-          'Space Exploration • 5h ago',
-          Icons.history,
-          Colors.blueGrey,
-          '0',
+        ValueListenableBuilder<Box>(
+          valueListenable: Hive.box('match_history').listenable(),
+          builder: (context, box, _) {
+            final matches = box.values.toList().reversed.take(3).toList();
+
+            if (matches.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Text(
+                    'No recent activity.',
+                    style: GoogleFonts.publicSans(color: AppColors.secondaryText),
+                  ),
+                ),
+              );
+            }
+
+            return Column(
+              children: matches.map((m) {
+                final record = MatchRecord.fromMap(m as Map<dynamic, dynamic>);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: _buildActivityTile(
+                    '${record.isVictory ? "Victory" : "Defeat"} vs ${record.opponentPersona}',
+                    '${record.topic} • ${_getTimeAgo(record.date)}',
+                    record.isVictory ? Icons.emoji_events : Icons.close,
+                    record.isVictory ? Colors.green : Colors.redAccent,
+                    '${record.isVictory ? "+" : "-"}${record.eloChange}',
+                  ),
+                );
+              }).toList(),
+            );
+          },
         ),
       ],
     );
@@ -590,7 +665,7 @@ class HomeScreen extends StatelessWidget {
                 Text(
                   eloChange,
                   style: GoogleFonts.publicSans(
-                    color: eloChange.startsWith('+') ? Colors.green : (eloChange == '0' ? AppColors.secondaryText : Colors.redAccent),
+                    color: color,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -611,46 +686,65 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 12, bottom: 24, left: 32, right: 32),
-      decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.9),
-        border: const Border(top: BorderSide(color: AppColors.divider)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildNavItem(context, Icons.home, 'HOME', isSelected: true),
-          _buildNavItem(context, Icons.emoji_events_outlined, 'LEAGUES'),
-          _buildNavItem(context, Icons.history, 'HISTORY'),
-          _buildNavItem(context, Icons.person_outline, 'PROFILE'),
-        ],
+  String _getTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'just now';
+  }
+}
+
+class _HomeDashboard extends StatelessWidget {
+  final VoidCallback onViewAll;
+  const _HomeDashboard({required this.onViewAll});
+
+  @override
+  Widget build(BuildContext context) {
+    // Access the state to call its UI building methods.
+    final homeState = context.findAncestorStateOfType<_HomeScreenState>();
+    if (homeState == null) return const SizedBox.shrink();
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            homeState.buildTopBar(context),
+            const SizedBox(height: 32),
+            homeState.buildProfileHeader(context),
+            const SizedBox(height: 32),
+            homeState.buildPerformanceHub(),
+            const SizedBox(height: 32),
+            homeState.buildDailyChallenge(context),
+            const SizedBox(height: 32),
+            homeState.buildCustomMatchSection(context),
+            const SizedBox(height: 32),
+            homeState.buildActivityFeed(context, onViewAll),
+            const SizedBox(height: 100), // Space for bottom nav
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, {bool isSelected = false}) {
-    return InkWell(
-      onTap: isSelected ? null : () => _showComingSoon(context),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? AppColors.accent : AppColors.secondaryText,
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.publicSans(
-              color: isSelected ? AppColors.accent : AppColors.secondaryText,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+class ComingSoonScreen extends StatelessWidget {
+  final String title;
+  const ComingSoonScreen({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        '$title COMING SOON',
+        style: GoogleFonts.publicSans(
+          color: AppColors.secondaryText,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

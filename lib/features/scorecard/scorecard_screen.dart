@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 
-class ScorecardScreen extends StatelessWidget {
+import '../../core/models/match_record.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+class ScorecardScreen extends StatefulWidget {
   final Map<String, dynamic> evaluationData;
 
   const ScorecardScreen({
@@ -12,16 +15,58 @@ class ScorecardScreen extends StatelessWidget {
   });
 
   @override
+  State<ScorecardScreen> createState() => _ScorecardScreenState();
+}
+
+class _ScorecardScreenState extends State<ScorecardScreen> {
+  bool _recordSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _saveMatch();
+  }
+
+  Future<void> _saveMatch() async {
+    if (widget.evaluationData.isEmpty || _recordSaved) return;
+
+    final clarity = widget.evaluationData['clarityScore'] ?? 0;
+    final logic = widget.evaluationData['logicScore'] ?? 0;
+    final rebuttal = widget.evaluationData['rebuttalScore'] ?? 0;
+    final fallacyScore = widget.evaluationData['fallacyScore'] ?? 0;
+
+    final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
+    final bool hasWon = finalScore >= 65;
+
+    final record = MatchRecord(
+      topic: widget.evaluationData['topic'] ?? 'Custom Match',
+      userStance: widget.evaluationData['userStance'] ?? 'User Stance',
+      opponentPersona: widget.evaluationData['opponentPersona'] ?? 'AI Debater',
+      isVictory: hasWon,
+      date: DateTime.now(),
+    );
+
+    final box = Hive.box('match_history');
+    await box.add(record.toMap());
+    
+    if (mounted) {
+      setState(() {
+        _recordSaved = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (evaluationData.isEmpty) {
+    if (widget.evaluationData.isEmpty) {
       return _buildForfeitState(context);
     }
 
     // New Win/Loss Formula: ((clarity + logic + rebuttals) / 3) - (fallacies * 0.5)
-    final clarity = (evaluationData['clarityScore'] ?? 0);
-    final logic = (evaluationData['logicScore'] ?? 0);
-    final rebuttal = (evaluationData['rebuttalScore'] ?? 0);
-    final fallacyScore = (evaluationData['fallacyScore'] ?? 0);
+    final clarity = (widget.evaluationData['clarityScore'] ?? 0);
+    final logic = (widget.evaluationData['logicScore'] ?? 0);
+    final rebuttal = (widget.evaluationData['rebuttalScore'] ?? 0);
+    final fallacyScore = (widget.evaluationData['fallacyScore'] ?? 0);
 
     final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
     final bool hasWon = finalScore >= 65;
@@ -60,7 +105,7 @@ class ScorecardScreen extends StatelessWidget {
             const SizedBox(height: 48),
             _buildPerformanceScorecard(clarityRatio, logicRatio, rebuttalRatio, fallaciesRatio),
             const SizedBox(height: 32),
-            _buildHighlightBlock(evaluationData['bestArgumentHighlight'] ?? 'No highlight available.'),
+            _buildHighlightBlock(widget.evaluationData['bestArgumentHighlight'] ?? 'No highlight available.'),
             const SizedBox(height: 32),
             _buildCoachButton(context),
             const SizedBox(height: 16),
@@ -135,7 +180,7 @@ class ScorecardScreen extends StatelessWidget {
                   border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
                 ),
                 child: Text(
-                  'Logic Integrity Sub-score: ${evaluationData['fallacyScore']}%',
+                  'Logic Integrity Sub-score: ${widget.evaluationData['fallacyScore']}%',
                   style: GoogleFonts.publicSans(
                     color: Colors.redAccent,
                     fontSize: 12,
@@ -145,7 +190,7 @@ class ScorecardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                evaluationData['coachFeedback'] ?? 'Keep practicing to improve your debating skills!',
+                widget.evaluationData['coachFeedback'] ?? 'Keep practicing to improve your debating skills!',
                 style: GoogleFonts.publicSans(
                   color: AppColors.secondaryText,
                   fontSize: 16,
@@ -289,10 +334,10 @@ class ScorecardScreen extends StatelessWidget {
       height: 64,
       child: ElevatedButton(
         onPressed: () async {
-          final clarity = evaluationData['clarityScore'] ?? 0;
-          final logic = evaluationData['logicScore'] ?? 0;
-          final rebuttal = evaluationData['rebuttalScore'] ?? 0;
-          final fallacyScore = evaluationData['fallacyScore'] ?? 0;
+          final clarity = widget.evaluationData['clarityScore'] ?? 0;
+          final logic = widget.evaluationData['logicScore'] ?? 0;
+          final rebuttal = widget.evaluationData['rebuttalScore'] ?? 0;
+          final fallacyScore = widget.evaluationData['fallacyScore'] ?? 0;
           
           final double finalScore = ((clarity + logic + rebuttal) / 3) - (fallacyScore * 0.5);
           final bool isVictory = finalScore >= 65;
@@ -303,7 +348,7 @@ class ScorecardScreen extends StatelessWidget {
               'Logic: $logic%\n'
               'Rebuttals: $rebuttal%\n'
               'Fallacies: $fallacyScore%\n\n'
-              'Coach Feedback: ${evaluationData['coachFeedback']}\n\n'
+              'Coach Feedback: ${widget.evaluationData['coachFeedback']}\n\n'
               'Play at DebateMe!';
 
           await Clipboard.setData(ClipboardData(text: shareText));
