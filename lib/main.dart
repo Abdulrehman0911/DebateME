@@ -9,6 +9,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
   await Hive.openBox('match_history');
+  await Hive.openBox('user_settings');
   runApp(const DebateMeApp());
 }
 

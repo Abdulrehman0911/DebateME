@@ -147,13 +147,17 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.accent,
-                borderRadius: BorderRadius.circular(8),
+            Image.asset(
+              'assets/images/logo.png',
+              height: 32,
+              errorBuilder: (context, error, stackTrace) => Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.gavel, color: Colors.white, size: 20),
               ),
-              child: const Icon(Icons.gavel, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
             Text(
@@ -189,65 +193,128 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildProfileHeader(BuildContext context, {required int elo}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return ValueListenableBuilder<Box>(
+      valueListenable: Hive.box('user_settings').listenable(keys: ['username']),
+      builder: (context, box, _) {
+        final String name = box.get('username', defaultValue: 'Abdulrehman');
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              'Abdulrehman',
-              style: GoogleFonts.publicSans(
-                color: AppColors.primaryText,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Elo: $elo',
-                  style: GoogleFonts.publicSans(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.bold,
+                GestureDetector(
+                  onTap: () => _showEditProfileDialog(context),
+                  child: Text(
+                    name,
+                    style: GoogleFonts.publicSans(
+                      color: AppColors.primaryText,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.circle, size: 4, color: AppColors.secondaryText),
-                const SizedBox(width: 8),
-                Text(
-                  'Top 2% Globally',
-                  style: GoogleFonts.publicSans(
-                    color: AppColors.secondaryText,
-                    fontSize: 12,
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      'Elo: $elo',
+                      style: GoogleFonts.publicSans(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.circle, size: 4, color: AppColors.secondaryText),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Top 2% Globally',
+                      style: GoogleFonts.publicSans(
+                        color: AppColors.secondaryText,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-        GestureDetector(
-          onTap: () => _showComingSoon(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.divider),
-            ),
-            child: Text(
-              'Edit Profile',
-              style: GoogleFonts.publicSans(
-                color: AppColors.primaryText,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+            GestureDetector(
+              onTap: () => _showEditProfileDialog(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Text(
+                  'Edit Profile',
+                  style: GoogleFonts.publicSans(
+                    color: AppColors.primaryText,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context) {
+    final controller = TextEditingController(
+      text: Hive.box('user_settings').get('username', defaultValue: 'Abdulrehman'),
+    );
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Edit Profile Name',
+          style: GoogleFonts.publicSans(color: AppColors.primaryText, fontWeight: FontWeight.bold),
         ),
-      ],
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: GoogleFonts.publicSans(color: AppColors.primaryText),
+          decoration: InputDecoration(
+            hintText: 'Enter your name',
+            hintStyle: GoogleFonts.publicSans(color: AppColors.secondaryText),
+            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.divider)),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+          ),
+          onSubmitted: (val) {
+            if (val.trim().isNotEmpty) {
+              Hive.box('user_settings').put('username', val.trim());
+              Navigator.pop(context);
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CANCEL', style: GoogleFonts.publicSans(color: AppColors.secondaryText)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                Hive.box('user_settings').put('username', controller.text.trim());
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('SAVE', style: GoogleFonts.publicSans(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 
