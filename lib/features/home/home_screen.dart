@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildProfileHeader(BuildContext context) {
+  Widget buildProfileHeader(BuildContext context, {required int elo}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -172,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 Text(
-                  'Elo: 1450',
+                  'Elo: $elo',
                   style: GoogleFonts.publicSans(
                     color: AppColors.accent,
                     fontWeight: FontWeight.bold,
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildPerformanceHub() {
+  Widget buildPerformanceHub({required String winRate, required int streak}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 'Win Rate',
-                '68%',
+                winRate,
                 '+5.2%',
                 Icons.trending_up,
                 Colors.green,
@@ -243,8 +243,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildStatCard(
-                'Active Streaks',
-                '12',
+                'Current Streak',
+                '$streak',
                 '',
                 Icons.bolt,
                 AppColors.accent,
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (trend.isNotEmpty)
+                  if (trend.isNotEmpty && title == 'Win Rate')
                     Row(
                       children: [
                         Icon(icon, size: 14, color: color),
@@ -549,7 +549,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildActivityFeed(BuildContext context, VoidCallback onViewAll) {
+  Widget buildActivityFeed(BuildContext context, Box box, VoidCallback onViewAll) {
+    final matches = box.values.toList().reversed.take(3).toList();
+
     return Column(
       children: [
         Row(
@@ -577,40 +579,32 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        ValueListenableBuilder<Box>(
-          valueListenable: Hive.box('match_history').listenable(),
-          builder: (context, box, _) {
-            final matches = box.values.toList().reversed.take(3).toList();
-
-            if (matches.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Text(
-                    'No recent activity.',
-                    style: GoogleFonts.publicSans(color: AppColors.secondaryText),
-                  ),
+        if (matches.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Text(
+                'No recent activity.',
+                style: GoogleFonts.publicSans(color: AppColors.secondaryText),
+              ),
+            ),
+          )
+        else
+          Column(
+            children: matches.map((m) {
+              final record = MatchRecord.fromMap(m as Map<dynamic, dynamic>);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: _buildActivityTile(
+                  '${record.isVictory ? "Victory" : "Defeat"} vs ${record.opponentPersona}',
+                  '${record.topic} • ${_getTimeAgo(record.date)}',
+                  record.isVictory ? Icons.emoji_events : Icons.close,
+                  record.isVictory ? Colors.green : Colors.redAccent,
+                  '${record.isVictory ? "+" : "-"}${record.eloChange}',
                 ),
               );
-            }
-
-            return Column(
-              children: matches.map((m) {
-                final record = MatchRecord.fromMap(m as Map<dynamic, dynamic>);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: _buildActivityTile(
-                    '${record.isVictory ? "Victory" : "Defeat"} vs ${record.opponentPersona}',
-                    '${record.topic} • ${_getTimeAgo(record.date)}',
-                    record.isVictory ? Icons.emoji_events : Icons.close,
-                    record.isVictory ? Colors.green : Colors.redAccent,
-                    '${record.isVictory ? "+" : "-"}${record.eloChange}',
-                  ),
-                );
-              }).toList(),
-            );
-          },
-        ),
+            }).toList(),
+          ),
       ],
     );
   }
@@ -701,32 +695,65 @@ class _HomeDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Access the state to call its UI building methods.
     final homeState = context.findAncestorStateOfType<_HomeScreenState>();
     if (homeState == null) return const SizedBox.shrink();
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 24),
-            homeState.buildTopBar(context),
-            const SizedBox(height: 32),
-            homeState.buildProfileHeader(context),
-            const SizedBox(height: 32),
-            homeState.buildPerformanceHub(),
-            const SizedBox(height: 32),
-            homeState.buildDailyChallenge(context),
-            const SizedBox(height: 32),
-            homeState.buildCustomMatchSection(context),
-            const SizedBox(height: 32),
-            homeState.buildActivityFeed(context, onViewAll),
-            const SizedBox(height: 100), // Space for bottom nav
-          ],
-        ),
-      ),
+    return ValueListenableBuilder<Box>(
+      valueListenable: Hive.box('match_history').listenable(),
+      builder: (context, box, _) {
+        final matches = box.values.map((m) => MatchRecord.fromMap(m as Map<dynamic, dynamic>)).toList();
+        
+        // Calculations
+        final int totalMatches = matches.length;
+        final int totalWins = matches.where((m) => m.isVictory).length;
+        final String winRate = totalMatches == 0 ? '0%' : '${((totalWins / totalMatches) * 100).toInt()}%';
+        
+        int elo = 1000;
+        int currentStreak = 0;
+        
+        // Elo calculation
+        for (var m in matches) {
+          if (m.isVictory) {
+            elo += 25;
+          } else {
+            elo -= 15;
+          }
+        }
+
+        // Streak calculation (backwards)
+        final reversedMatches = matches.reversed;
+        for (var m in reversedMatches) {
+          if (m.isVictory) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 24),
+                homeState.buildTopBar(context),
+                const SizedBox(height: 32),
+                homeState.buildProfileHeader(context, elo: elo),
+                const SizedBox(height: 32),
+                homeState.buildPerformanceHub(winRate: winRate, streak: currentStreak),
+                const SizedBox(height: 32),
+                homeState.buildDailyChallenge(context),
+                const SizedBox(height: 32),
+                homeState.buildCustomMatchSection(context),
+                const SizedBox(height: 32),
+                homeState.buildActivityFeed(context, box, onViewAll),
+                const SizedBox(height: 100), // Space for bottom nav
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
