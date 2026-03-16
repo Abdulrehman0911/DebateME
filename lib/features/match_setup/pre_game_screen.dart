@@ -257,7 +257,7 @@ class _PreGameScreenState extends State<PreGameScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          elevation: canProceed ? 8 : 0,
+          elevation: canProceed ? 4 : 0,
         ),
         child: Text(
           'ENTER ARENA',

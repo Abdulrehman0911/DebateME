@@ -19,11 +19,12 @@ class HistoryScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               Text(
-                'Match History',
+                'History',
                 style: GoogleFonts.publicSans(
                   color: AppColors.primaryText,
                   fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
                 ),
               ),
               const SizedBox(height: 8),
@@ -86,21 +87,21 @@ class HistoryScreen extends StatelessWidget {
     final timeAgo = _getTimeAgo(record.date);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.6),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.divider.withOpacity(0.5)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
