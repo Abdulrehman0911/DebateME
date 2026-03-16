@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:math';
 import '../../core/constants/app_colors.dart';
 import '../../core/models/match_record.dart';
 import '../match_setup/pre_game_screen.dart';
@@ -16,18 +17,53 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-
   late final List<Widget> _screens;
+
+  // Daily Challenge Data
+  String _dailyTopic = "";
+  String _dailyPersona = "";
+  String _dailyStance = "";
+
+  final List<String> _topics = [
+    "AI Replacing Human Art",
+    "Universal Basic Income",
+    "Social Media is Harmful",
+    "Colonizing Mars",
+    "Genetic Engineering",
+  ];
+
+  final List<String> _personas = [
+    "The Aggressor",
+    "The Comedian",
+    "The Philosopher",
+    "The Scientist",
+    "The Skeptic",
+  ];
+
+  final List<String> _stances = ["PRO", "CON"];
 
   @override
   void initState() {
     super.initState();
+    _generateDailyChallenge();
     _screens = [
-      _HomeDashboard(onViewAll: () => setState(() => _currentIndex = 2)),
+      _HomeDashboard(
+        onViewAll: () => setState(() => _currentIndex = 2),
+        dailyTopic: _dailyTopic,
+        dailyPersona: _dailyPersona,
+        dailyStance: _dailyStance,
+      ),
       const ComingSoonScreen(title: 'LEAGUES'),
       const HistoryScreen(),
       const ComingSoonScreen(title: 'PROFILE'),
     ];
+  }
+
+  void _generateDailyChallenge() {
+    final random = Random();
+    _dailyTopic = _topics[random.nextInt(_topics.length)];
+    _dailyPersona = _personas[random.nextInt(_personas.length)];
+    _dailyStance = _stances[random.nextInt(_stances.length)];
   }
 
   @override
@@ -324,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildDailyChallenge(BuildContext context) {
+  Widget buildDailyChallenge(BuildContext context, {required String topic, required String persona, required String stance}) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -381,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _buildChallengeLabel('TOPIC'),
                     const SizedBox(height: 4),
                     Text(
-                      'SOCIAL MEDIA\nIS HARMFUL',
+                      topic.toUpperCase(),
                       style: GoogleFonts.publicSans(
                         color: AppColors.primaryText,
                         fontSize: 22,
@@ -393,9 +429,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 12),
                     _buildChallengeLabel('STANCE'),
                     Text(
-                      'Defend PRO stance',
+                      'Defend $stance stance',
                       style: GoogleFonts.publicSans(
-                        color: Colors.greenAccent,
+                        color: stance == "PRO" ? Colors.greenAccent : Colors.redAccent,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -427,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Philosopher',
+                            persona.split(' ').last,
                             style: GoogleFonts.publicSans(
                               color: AppColors.primaryText,
                               fontSize: 12,
@@ -451,10 +487,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ArenaScreen(
-                      topic: 'Social Media is Harmful',
-                      userStance: 'Pro-Social Media',
-                      opponentPersona: 'Philosopher',
+                    builder: (context) => ArenaScreen(
+                      topic: topic,
+                      userStance: '$stance-Debater',
+                      opponentPersona: persona,
                     ),
                   ),
                 );
@@ -691,7 +727,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _HomeDashboard extends StatelessWidget {
   final VoidCallback onViewAll;
-  const _HomeDashboard({required this.onViewAll});
+  final String dailyTopic;
+  final String dailyPersona;
+  final String dailyStance;
+
+  const _HomeDashboard({
+    required this.onViewAll,
+    required this.dailyTopic,
+    required this.dailyPersona,
+    required this.dailyStance,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -743,7 +788,12 @@ class _HomeDashboard extends StatelessWidget {
                 const SizedBox(height: 32),
                 homeState.buildPerformanceHub(winRate: winRate, streak: currentStreak),
                 const SizedBox(height: 32),
-                homeState.buildDailyChallenge(context),
+                homeState.buildDailyChallenge(
+                  context,
+                  topic: dailyTopic,
+                  persona: dailyPersona,
+                  stance: dailyStance,
+                ),
                 const SizedBox(height: 32),
                 homeState.buildCustomMatchSection(context),
                 const SizedBox(height: 32),
