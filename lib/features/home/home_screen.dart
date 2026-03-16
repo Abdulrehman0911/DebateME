@@ -7,6 +7,8 @@ import '../../core/models/match_record.dart';
 import '../match_setup/pre_game_screen.dart';
 import '../arena/arena_screen.dart';
 import '../history/history_screen.dart';
+import '../league/league_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,9 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
         dailyPersona: _dailyPersona,
         dailyStance: _dailyStance,
       ),
-      const ComingSoonScreen(title: 'LEAGUES'),
+      const LeaguesScreen(),
       const HistoryScreen(),
-      const ComingSoonScreen(title: 'PROFILE'),
+      const ProfileScreen(),
     ];
   }
 
