@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/neon_button.dart';
@@ -55,6 +56,20 @@ class _SignupScreenState extends State<SignupScreen> {
       await credential.user?.updateDisplayName(
         _displayNameController.text.trim(),
       );
+
+      final uid = credential.user!.uid;
+      final email = _emailController.text.trim();
+      final username = email.split('@')[0];
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'email': email,
+        'username': username,
+        'elo': 1000,
+        'wins': 0,
+        'losses': 0,
+        'streak': 0,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(

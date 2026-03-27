@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 8),
             GestureDetector(
-              onTap: () => _showComingSoon(context),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
