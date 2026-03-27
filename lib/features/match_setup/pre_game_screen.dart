@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/constants/app_colors.dart';
+import '../../widgets/glass_card.dart';
+import '../../widgets/neon_button.dart';
 import '../arena/arena_screen.dart';
 
 class PreGameScreen extends StatefulWidget {
@@ -12,126 +15,73 @@ class PreGameScreen extends StatefulWidget {
 
 class _PreGameScreenState extends State<PreGameScreen> {
   final TextEditingController _resolutionController = TextEditingController();
-  String _selectedStance = 'PRO'; // Default to PRO
+  String _selectedStance = 'PRO';
   String? _selectedOpponent;
 
   final List<Map<String, String>> _opponents = [
-    {
-      'name': 'The Philosopher',
-      'description': 'Deep logic, abstract reasoning, and endless "Why?"',
-      'icon': '🏛️',
-    },
-    {
-      'name': 'The Politician',
-      'description': 'Master of rhetoric, persuasion, and dodging questions.',
-      'icon': '🎙️',
-    },
-    {
-      'name': 'The Scientist',
-      'description': 'Empirical, evidence-based, and focused on statistical probability.',
-      'icon': '🧬',
-    },
-    {
-      'name': 'The Aggressor',
-      'description': 'Direct, blunt, and relentless in dismantling arguments.',
-      'icon': '⚔️',
-    },
+    {'name': 'The Philosopher', 'description': 'Deep logic, abstract reasoning, and endless "Why?"', 'icon': '🏛️'},
+    {'name': 'The Politician', 'description': 'Master of rhetoric, persuasion, and dodging questions.', 'icon': '🎙️'},
+    {'name': 'The Scientist', 'description': 'Empirical, evidence-based, and focused on statistical probability.', 'icon': '🧬'},
+    {'name': 'The Aggressor', 'description': 'Direct, blunt, and relentless in dismantling arguments.', 'icon': '⚔️'},
   ];
 
   @override
-  void dispose() {
-    _resolutionController.dispose();
-    super.dispose();
-  }
+  void dispose() { _resolutionController.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'MATCH SETUP',
-          style: GoogleFonts.publicSans(
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0,
+          title: Text('MATCH SETUP', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             _buildSectionTitle('RESOLUTION'),
             const SizedBox(height: 12),
-            _buildResolutionInput(),
+            _buildResolutionInput().animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
             const SizedBox(height: 32),
             _buildSectionTitle('YOUR STANCE'),
             const SizedBox(height: 12),
-            _buildStanceSelector(),
+            _buildStanceSelector().animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.1),
             const SizedBox(height: 32),
             _buildSectionTitle('SELECT OPPONENT'),
             const SizedBox(height: 12),
             _buildOpponentSelector(),
             const SizedBox(height: 48),
             _buildEnterArenaButton(),
-          ],
+          ]),
         ),
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: GoogleFonts.publicSans(
-        color: AppColors.secondaryText,
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 2.0,
-      ),
-    );
+    return Text(title, style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2.0));
   }
 
   Widget _buildResolutionInput() {
     return TextField(
       controller: _resolutionController,
-      style: GoogleFonts.publicSans(color: AppColors.primaryText),
+      style: GoogleFonts.outfit(color: AppColors.primaryText),
       decoration: InputDecoration(
-        hintText: 'Enter Custom Resolution',
-        hintStyle: GoogleFonts.publicSans(color: AppColors.secondaryText.withOpacity(0.5)),
-        filled: true,
-        fillColor: AppColors.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.divider),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.divider),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accent, width: 2),
-        ),
+        hintText: 'Enter Custom Resolution', hintStyle: GoogleFonts.outfit(color: AppColors.mutedText.withOpacity(0.5)),
+        filled: true, fillColor: AppColors.surface,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.neonPurple, width: 2)),
       ),
     );
   }
 
   Widget _buildStanceSelector() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStanceButton('PRO', AppColors.accent),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStanceButton('CON', Colors.blueGrey),
-        ),
-      ],
-    );
+    return Row(children: [
+      Expanded(child: _buildStanceButton('PRO', AppColors.neonPurple)),
+      const SizedBox(width: 16),
+      Expanded(child: _buildStanceButton('CON', AppColors.electricBlue)),
+    ]);
   }
 
   Widget _buildStanceButton(String stance, Color color) {
@@ -139,135 +89,69 @@ class _PreGameScreenState extends State<PreGameScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedStance = stance),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 60,
+        duration: const Duration(milliseconds: 200), height: 60,
         decoration: BoxDecoration(
-          color: isSelected ? color : AppColors.surface,
+          gradient: isSelected ? LinearGradient(colors: [color, color.withOpacity(0.7)]) : null,
+          color: isSelected ? null : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? color : AppColors.divider,
-            width: 2,
-          ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]
-              : [],
+          border: Border.all(color: isSelected ? color : AppColors.divider, width: 2),
+          boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 4))] : [],
         ),
         alignment: Alignment.center,
-        child: Text(
-          stance,
-          style: GoogleFonts.publicSans(
-            color: isSelected ? Colors.white : AppColors.secondaryText,
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-            letterSpacing: 2,
-          ),
-        ),
+        child: Text(stance, style: GoogleFonts.spaceGrotesk(color: isSelected ? Colors.white : AppColors.mutedText, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2)),
       ),
     );
   }
 
   Widget _buildOpponentSelector() {
-    return Column(
-      children: _opponents.map((opponent) {
-        bool isSelected = _selectedOpponent == opponent['name'];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12.0),
-          child: GestureDetector(
-            onTap: () => setState(() => _selectedOpponent = opponent['name']),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.surface : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? AppColors.accent : AppColors.divider,
-                  width: 2,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    opponent['icon']!,
-                    style: const TextStyle(fontSize: 32),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          opponent['name']!,
-                          style: GoogleFonts.publicSans(
-                            color: AppColors.primaryText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          opponent['description']!,
-                          style: GoogleFonts.publicSans(
-                            color: AppColors.secondaryText,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isSelected)
-                    const Icon(Icons.check_circle, color: AppColors.accent),
-                ],
-              ),
+    return Column(children: _opponents.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final opponent = entry.value;
+      bool isSelected = _selectedOpponent == opponent['name'];
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: GestureDetector(
+          onTap: () => setState(() => _selectedOpponent = opponent['name']),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.neonPurple.withOpacity(0.1) : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isSelected ? AppColors.neonPurple : AppColors.divider, width: isSelected ? 2 : 1),
+              boxShadow: isSelected ? [BoxShadow(color: AppColors.neonPurple.withOpacity(0.15), blurRadius: 16)] : [],
             ),
+            child: Row(children: [
+              Text(opponent['icon']!, style: const TextStyle(fontSize: 32)),
+              const SizedBox(width: 16),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(opponent['name']!, style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 4),
+                Text(opponent['description']!, style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 12)),
+              ])),
+              if (isSelected) ShaderMask(shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds), child: const Icon(Icons.check_circle, color: Colors.white)),
+            ]),
           ),
-        );
-      }).toList(),
-    );
+        ),
+      ).animate().fadeIn(duration: 400.ms, delay: (150 * idx).ms).slideX(begin: 0.1);
+    }).toList());
   }
 
   Widget _buildEnterArenaButton() {
     bool canProceed = _selectedOpponent != null;
-    return SizedBox(
-      width: double.infinity,
-      height: 64,
-      child: ElevatedButton(
-        onPressed: canProceed
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArenaScreen(
-                      topic: _resolutionController.text.isEmpty
-                          ? 'Centralization vs. Decentralization'
-                          : _resolutionController.text,
-                      userStance: _selectedStance == 'PRO'
-                          ? 'Pro-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}'
-                          : 'Anti-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}',
-                      opponentPersona: _selectedOpponent!,
-                    ),
-                  ),
-                );
-              }
-            : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accent,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.divider,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: canProceed ? 4 : 0,
-        ),
-        child: Text(
-          'ENTER ARENA',
-          style: GoogleFonts.publicSans(
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-            letterSpacing: 2,
-          ),
-        ),
-      ),
-    );
+    if (!canProceed) {
+      return SizedBox(width: double.infinity, height: 64, child: ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(backgroundColor: AppColors.divider, disabledBackgroundColor: AppColors.divider, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+        child: Text('ENTER ARENA', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2, color: AppColors.mutedText)),
+      ));
+    }
+    return NeonButton(text: 'ENTER ARENA', icon: Icons.flash_on, height: 64, onPressed: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ArenaScreen(
+        topic: _resolutionController.text.isEmpty ? 'Centralization vs. Decentralization' : _resolutionController.text,
+        userStance: _selectedStance == 'PRO' ? 'Pro-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}' : 'Anti-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}',
+        opponentPersona: _selectedOpponent!,
+      )));
+    });
   }
 }

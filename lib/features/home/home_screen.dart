@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math';
 import '../../core/constants/app_colors.dart';
 import '../../core/models/match_record.dart';
+import '../../widgets/glass_card.dart';
+import '../../widgets/neon_button.dart';
 import '../match_setup/pre_game_screen.dart';
 import '../arena/arena_screen.dart';
 import '../history/history_screen.dart';
@@ -70,13 +73,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: AppColors.backgroundGradient,
       ),
-      bottomNavigationBar: _buildBottomNav(context),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: _buildBottomNav(context),
+      ),
     );
   }
 
@@ -84,16 +92,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.only(top: 12, bottom: 24, left: 32, right: 32),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.9),
-        border: const Border(top: BorderSide(color: AppColors.divider)),
+        color: AppColors.deepVoid.withOpacity(0.85),
+        border: Border(
+          top: BorderSide(color: AppColors.neonPurple.withOpacity(0.2)),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildNavItem(Icons.home, 'HOME', index: 0),
+          _buildNavItem(Icons.home_rounded, 'HOME', index: 0),
           _buildNavItem(Icons.emoji_events_outlined, 'LEAGUES', index: 1),
-          _buildNavItem(Icons.history, 'HISTORY', index: 2),
-          _buildNavItem(Icons.person_outline, 'PROFILE', index: 3),
+          _buildNavItem(Icons.history_rounded, 'HISTORY', index: 2),
+          _buildNavItem(Icons.person_outline_rounded, 'PROFILE', index: 3),
         ],
       ),
     );
@@ -110,16 +120,24 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isSelected ? AppColors.accent : AppColors.secondaryText,
-            size: 24,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: isSelected ? AppColors.neonPurple.withOpacity(0.15) : Colors.transparent,
+            ),
+            child: Icon(
+              icon,
+              color: isSelected ? AppColors.neonPurple : AppColors.mutedText,
+              size: 24,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.publicSans(
-              color: isSelected ? AppColors.accent : AppColors.secondaryText,
+            style: GoogleFonts.outfit(
+              color: isSelected ? AppColors.neonPurple : AppColors.mutedText,
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),
@@ -134,9 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
       SnackBar(
         content: Text(
           'Feature coming soon!',
-          style: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.neonPurple,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
@@ -155,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
               errorBuilder: (context, error, stackTrace) => Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.accent,
+                  gradient: AppColors.accentGradient,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.gavel, color: Colors.white, size: 20),
@@ -164,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Text(
               'DEBATEME',
-              style: GoogleFonts.publicSans(
+              style: GoogleFonts.spaceGrotesk(
                 color: AppColors.primaryText,
                 fontWeight: FontWeight.w900,
                 fontSize: 22,
@@ -177,16 +195,23 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: AppColors.secondaryText),
+              icon: const Icon(Icons.notifications_none_rounded, color: AppColors.mutedText),
               onPressed: () => _showComingSoon(context),
             ),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: () => _showComingSoon(context),
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundColor: AppColors.surface,
-                child: Icon(Icons.person, color: AppColors.secondaryText),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppColors.accentGradient,
+                ),
+                padding: const EdgeInsets.all(2),
+                child: const CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.surface,
+                  child: Icon(Icons.person, color: AppColors.mutedText, size: 20),
+                ),
               ),
             ),
           ],
@@ -211,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => _showEditProfileDialog(context),
                   child: Text(
                     name,
-                    style: GoogleFonts.publicSans(
+                    style: GoogleFonts.spaceGrotesk(
                       color: AppColors.primaryText,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -221,20 +246,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(
-                      'Elo: $elo',
-                      style: GoogleFonts.publicSans(
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.bold,
+                    ShaderMask(
+                      shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds),
+                      child: Text(
+                        'Elo: $elo',
+                        style: GoogleFonts.spaceGrotesk(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.circle, size: 4, color: AppColors.secondaryText),
+                    const Icon(Icons.circle, size: 4, color: AppColors.mutedText),
                     const SizedBox(width: 8),
                     Text(
                       'Top 2% Globally',
-                      style: GoogleFonts.publicSans(
-                        color: AppColors.secondaryText,
+                      style: GoogleFonts.outfit(
+                        color: AppColors.mutedText,
                         fontSize: 12,
                       ),
                     ),
@@ -247,14 +275,14 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(color: AppColors.neonPurple.withOpacity(0.5)),
                 ),
                 child: Text(
                   'Edit Profile',
-                  style: GoogleFonts.publicSans(
-                    color: AppColors.primaryText,
+                  style: GoogleFonts.outfit(
+                    color: AppColors.neonPurple,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -275,20 +303,23 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
         title: Text(
           'Edit Profile Name',
-          style: GoogleFonts.publicSans(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+          style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: GoogleFonts.publicSans(color: AppColors.primaryText),
+          style: GoogleFonts.outfit(color: AppColors.primaryText),
           decoration: InputDecoration(
             hintText: 'Enter your name',
-            hintStyle: GoogleFonts.publicSans(color: AppColors.secondaryText),
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.divider)),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accent)),
+            hintStyle: GoogleFonts.outfit(color: AppColors.mutedText),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.divider)),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.neonPurple)),
           ),
           onSubmitted: (val) {
             if (val.trim().isNotEmpty) {
@@ -300,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('CANCEL', style: GoogleFonts.publicSans(color: AppColors.secondaryText)),
+            child: Text('CANCEL', style: GoogleFonts.outfit(color: AppColors.mutedText)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -310,11 +341,11 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
+              backgroundColor: AppColors.neonPurple,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('SAVE', style: GoogleFonts.publicSans(fontWeight: FontWeight.bold)),
+            child: Text('SAVE', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -327,8 +358,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Text(
           'PERFORMANCE HUB',
-          style: GoogleFonts.publicSans(
-            color: AppColors.secondaryText,
+          style: GoogleFonts.outfit(
+            color: AppColors.mutedText,
             fontSize: 10,
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
@@ -343,8 +374,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 winRate,
                 trend: '+5.2%',
                 icon: Icons.trending_up,
-                color: Colors.greenAccent,
-              ),
+                color: AppColors.victory,
+              ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -352,8 +383,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Active Streaks',
                 streak.toString(),
                 showGraph: true,
-                color: AppColors.accent,
-              ),
+                color: AppColors.electricBlue,
+              ).animate().fadeIn(duration: 500.ms, delay: 150.ms).slideY(begin: 0.2),
             ),
           ],
         ),
@@ -361,21 +392,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, {String trend = '', IconData icon = Icons.trending_up, Color color = AppColors.accent, bool showGraph = false}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider.withOpacity(0.5)),
-      ),
+  Widget _buildStatCard(String title, String value,
+      {String trend = '', IconData icon = Icons.trending_up, Color color = AppColors.neonPurple, bool showGraph = false}) {
+    return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: GoogleFonts.publicSans(
-              color: AppColors.secondaryText,
+            style: GoogleFonts.outfit(
+              color: AppColors.mutedText,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -391,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     value,
-                    style: GoogleFonts.publicSans(
+                    style: GoogleFonts.spaceGrotesk(
                       color: AppColors.primaryText,
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
@@ -400,12 +426,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (trend.isNotEmpty)
                     Row(
                       children: [
-                        Icon(icon, size: 14, color: Colors.greenAccent),
+                        Icon(icon, size: 14, color: color),
                         const SizedBox(width: 4),
                         Text(
                           trend,
-                          style: GoogleFonts.publicSans(
-                            color: Colors.greenAccent,
+                          style: GoogleFonts.outfit(
+                            color: color,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -431,13 +457,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildDailyChallenge(BuildContext context, {required String topic, required String persona, required String stance}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.divider.withOpacity(0.5)),
-      ),
+  Widget buildDailyChallenge(BuildContext context,
+      {required String topic, required String persona, required String stance}) {
+    return GlassCard(
+      borderColor: AppColors.electricBlue.withOpacity(0.3),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.electricBlue.withOpacity(0.08),
+          blurRadius: 30,
+          spreadRadius: 0,
+        ),
+      ],
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,17 +478,18 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.1),
+                  color: AppColors.electricBlue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.electricBlue.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.timer_outlined, size: 12, color: AppColors.accent),
+                    Icon(Icons.timer_outlined, size: 12, color: AppColors.electricBlue),
                     const SizedBox(width: 4),
                     Text(
                       'ENDS IN 04:22:15',
-                      style: GoogleFonts.publicSans(
-                        color: AppColors.accent,
+                      style: GoogleFonts.outfit(
+                        color: AppColors.electricBlue,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -466,7 +497,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const Icon(Icons.bolt, color: AppColors.accent, size: 20),
+              ShaderMask(
+                shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds),
+                child: const Icon(Icons.bolt, color: Colors.white, size: 20),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -482,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 8),
                     Text(
                       topic.toUpperCase(),
-                      style: GoogleFonts.publicSans(
+                      style: GoogleFonts.spaceGrotesk(
                         color: AppColors.primaryText,
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -495,8 +529,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Defend $stance stance',
-                      style: GoogleFonts.publicSans(
-                        color: stance == "PRO" ? Colors.greenAccent : Colors.redAccent,
+                      style: GoogleFonts.outfit(
+                        color: stance == "PRO" ? AppColors.victory : AppColors.defeat,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -516,9 +550,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 80,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: AppColors.deepVoid.withOpacity(0.6),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.divider),
+                        border: Border.all(color: AppColors.neonPurple.withOpacity(0.3)),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -526,15 +560,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.accent.withOpacity(0.1),
+                              gradient: AppColors.accentGradient,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.psychology, color: AppColors.accent, size: 24),
+                            child: const Icon(Icons.psychology, color: Colors.white, size: 24),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             persona.split(' ').last,
-                            style: GoogleFonts.publicSans(
+                            style: GoogleFonts.outfit(
                               color: AppColors.primaryText,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -550,51 +584,32 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArenaScreen(
-                      topic: topic,
-                      userStance: '$stance-Debater',
-                      opponentPersona: persona,
-                    ),
+          NeonButton(
+            text: 'ACCEPT CHALLENGE',
+            icon: Icons.bolt,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ArenaScreen(
+                    topic: topic,
+                    userStance: '$stance-Debater',
+                    opponentPersona: persona,
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: AppColors.accent,
-                side: const BorderSide(color: AppColors.accent, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 0,
-              ),
-              child: Text(
-                'ACCEPT CHALLENGE',
-                style: GoogleFonts.publicSans(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.5,
-                  fontSize: 14,
-                ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
-    );
+    ).animate().fadeIn(duration: 600.ms, delay: 200.ms).slideY(begin: 0.15);
   }
 
   Widget _buildChallengeLabel(String text) {
     return Text(
       text,
-      style: GoogleFonts.publicSans(
-        color: AppColors.secondaryText,
+      style: GoogleFonts.outfit(
+        color: AppColors.mutedText,
         fontSize: 10,
         fontWeight: FontWeight.bold,
         letterSpacing: 1.5,
@@ -608,48 +623,24 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Text(
           'ARENA ACTIONS',
-          style: GoogleFonts.publicSans(
-            color: AppColors.secondaryText,
+          style: GoogleFonts.outfit(
+            color: AppColors.mutedText,
             fontSize: 10,
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
+        NeonButton(
+          text: 'START CUSTOM MATCH',
+          icon: Icons.add,
           height: 64,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PreGameScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4800), // Vibrant Red-Orange
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 4,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.add, size: 24, color: Colors.white),
-                const SizedBox(width: 12),
-                Text(
-                  'START CUSTOM MATCH',
-                  style: GoogleFonts.publicSans(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PreGameScreen()),
+            );
+          },
         ),
       ],
     );
@@ -665,7 +656,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'Activity Feed',
-              style: GoogleFonts.publicSans(
+              style: GoogleFonts.spaceGrotesk(
                 color: AppColors.primaryText,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -675,8 +666,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: onViewAll,
               child: Text(
                 'View All',
-                style: GoogleFonts.publicSans(
-                  color: AppColors.accent,
+                style: GoogleFonts.outfit(
+                  color: AppColors.neonPurple,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -691,27 +682,29 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(32.0),
               child: Text(
                 'No recent activity.',
-                style: GoogleFonts.publicSans(color: AppColors.secondaryText),
+                style: GoogleFonts.outfit(color: AppColors.mutedText),
               ),
             ),
           )
         else
           Column(
-            children: matches.map((m) {
+            children: matches.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final m = entry.value;
               final record = MatchRecord.fromMap(m as Map<dynamic, dynamic>);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: _buildActivityTile(
                   '${record.result} vs ${record.opponentPersona}',
                   '${record.topic} • ${_getTimeAgo(record.date)}',
-                  record.result == 'Victory' 
-                      ? Icons.emoji_events 
+                  record.result == 'Victory'
+                      ? Icons.emoji_events
                       : (record.result == 'Draw' ? Icons.history : Icons.close),
-                  record.result == 'Victory' 
-                      ? Colors.green 
-                      : (record.result == 'Draw' ? Colors.orange : Colors.redAccent),
+                  record.result == 'Victory'
+                      ? AppColors.victory
+                      : (record.result == 'Draw' ? AppColors.draw : AppColors.defeat),
                   '${record.result == 'Victory' ? "+" : (record.result == 'Defeat' ? "-" : "")}${record.eloChange}',
-                ),
+                ).animate().fadeIn(duration: 400.ms, delay: (100 * idx).ms).slideX(begin: 0.1),
               );
             }).toList(),
           ),
@@ -719,22 +712,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActivityTile(String title, String subtitle, IconData icon, Color color, String eloChange, {double opacity = 1.0}) {
+  Widget _buildActivityTile(String title, String subtitle, IconData icon, Color color, String eloChange,
+      {double opacity = 1.0}) {
     return Opacity(
       opacity: opacity,
-      child: Container(
+      child: GlassCard(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider.withOpacity(0.5)),
-        ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: color, size: 22),
@@ -746,7 +735,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.publicSans(
+                    style: GoogleFonts.outfit(
                       color: AppColors.primaryText,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -755,8 +744,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: GoogleFonts.publicSans(
-                      color: AppColors.secondaryText,
+                    style: GoogleFonts.outfit(
+                      color: AppColors.mutedText,
                       fontSize: 11,
                     ),
                   ),
@@ -768,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   eloChange,
-                  style: GoogleFonts.publicSans(
+                  style: GoogleFonts.spaceGrotesk(
                     color: color,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -776,8 +765,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Text(
                   'ELO',
-                  style: GoogleFonts.publicSans(
-                    color: AppColors.secondaryText.withOpacity(0.5),
+                  style: GoogleFonts.outfit(
+                    color: AppColors.mutedText.withOpacity(0.5),
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -821,15 +810,15 @@ class _HomeDashboard extends StatelessWidget {
       valueListenable: Hive.box('match_history').listenable(),
       builder: (context, box, _) {
         final matches = box.values.map((m) => MatchRecord.fromMap(m as Map<dynamic, dynamic>)).toList();
-        
+
         // Calculations
         final int totalMatches = matches.length;
         final int totalWins = matches.where((m) => m.result == 'Victory').length;
         final String winRate = totalMatches == 0 ? '0%' : '${((totalWins / totalMatches) * 100).toInt()}%';
-        
+
         int elo = 1000;
         int currentStreak = 0;
-        
+
         // Elo calculation
         for (var m in matches) {
           elo += m.eloChange;
@@ -887,8 +876,8 @@ class ComingSoonScreen extends StatelessWidget {
     return Center(
       child: Text(
         '$title COMING SOON',
-        style: GoogleFonts.publicSans(
-          color: AppColors.secondaryText,
+        style: GoogleFonts.spaceGrotesk(
+          color: AppColors.mutedText,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -924,6 +913,16 @@ class SparklinePainter extends CustomPainter {
     );
 
     canvas.drawPath(path, paint);
+
+    // Glow effect
+    final glowPaint = Paint()
+      ..color = color.withOpacity(0.2)
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+    canvas.drawPath(path, glowPaint);
   }
 
   @override
