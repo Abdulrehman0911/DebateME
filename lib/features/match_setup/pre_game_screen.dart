@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/neon_button.dart';
+import '../../widgets/neon_text.dart';
 import '../arena/arena_screen.dart';
 
 class PreGameScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _PreGameScreenState extends State<PreGameScreen> {
   final TextEditingController _resolutionController = TextEditingController();
   String _selectedStance = 'PRO';
   String? _selectedOpponent;
+  int _selectedRounds = 5;
 
   final List<Map<String, String>> _opponents = [
     {'name': 'The Philosopher', 'description': 'Deep logic, abstract reasoning, and endless "Why?"', 'icon': '🏛️'},
@@ -43,14 +45,22 @@ class _PreGameScreenState extends State<PreGameScreen> {
             const SizedBox(height: 12),
             _buildResolutionInput().animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
             const SizedBox(height: 32),
+            
+            _buildSectionTitle('ROUNDS'),
+            const SizedBox(height: 12),
+            _buildRoundsSelector().animate().fadeIn(duration: 400.ms, delay: 50.ms).slideY(begin: 0.1),
+            const SizedBox(height: 32),
+            
             _buildSectionTitle('YOUR STANCE'),
             const SizedBox(height: 12),
             _buildStanceSelector().animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.1),
             const SizedBox(height: 32),
+            
             _buildSectionTitle('SELECT OPPONENT'),
             const SizedBox(height: 12),
             _buildOpponentSelector(),
             const SizedBox(height: 48),
+            
             _buildEnterArenaButton(),
           ]),
         ),
@@ -69,9 +79,53 @@ class _PreGameScreenState extends State<PreGameScreen> {
       decoration: InputDecoration(
         hintText: 'Enter Custom Resolution', hintStyle: GoogleFonts.outfit(color: AppColors.mutedText.withOpacity(0.5)),
         filled: true, fillColor: AppColors.surface,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.divider)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.divider)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.neonPurple, width: 2)),
+      ),
+    );
+  }
+
+  Widget _buildRoundsSelector() {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      borderColor: AppColors.neonPurple.withOpacity(0.3),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Total Rounds: ', style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 14)),
+              NeonText(
+                text: '$_selectedRounds',
+                fontSize: 32,
+                glowColor: AppColors.electricBlue,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: AppColors.neonPurple,
+              inactiveTrackColor: Colors.white24,
+              thumbColor: AppColors.electricBlue,
+              overlayColor: AppColors.neonPurple.withOpacity(0.2),
+              valueIndicatorTextStyle: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
+            ),
+            child: Slider(
+              value: _selectedRounds.toDouble(),
+              min: 4,
+              max: 15,
+              divisions: 11,
+              label: _selectedRounds.toString(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedRounds = value.toInt();
+                });
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -151,6 +205,7 @@ class _PreGameScreenState extends State<PreGameScreen> {
         topic: _resolutionController.text.isEmpty ? 'Centralization vs. Decentralization' : _resolutionController.text,
         userStance: _selectedStance == 'PRO' ? 'Pro-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}' : 'Anti-${_resolutionController.text.isEmpty ? 'Decentralization' : _resolutionController.text}',
         opponentPersona: _selectedOpponent!,
+        totalRounds: _selectedRounds,
       )));
     });
   }

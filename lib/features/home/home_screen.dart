@@ -588,6 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
             text: 'ACCEPT CHALLENGE',
             icon: Icons.bolt,
             onPressed: () {
+              int dailyRounds = Random().nextInt(4) + 5;
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -595,6 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     topic: topic,
                     userStance: '$stance-Debater',
                     opponentPersona: persona,
+                    totalRounds: dailyRounds,
                   ),
                 ),
               );

@@ -12,12 +12,14 @@ class ArenaScreen extends StatefulWidget {
   final String topic;
   final String userStance;
   final String opponentPersona;
+  final int totalRounds;
 
   const ArenaScreen({
     super.key,
     required this.topic,
     required this.userStance,
     required this.opponentPersona,
+    required this.totalRounds,
   });
 
   @override
@@ -85,7 +87,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
     try {
       final response = await _aiService.getOpponentResponse(topic: widget.topic, userStance: widget.userStance, opponentPersona: widget.opponentPersona, userMessage: text);
       if (mounted) {
-        setState(() { _isTyping = false; _messages.add({'isAI': true, 'text': response}); if (_userMessageCount >= 4) _isMatchOver = true; });
+        setState(() { _isTyping = false; _messages.add({'isAI': true, 'text': response}); if (_userMessageCount >= widget.totalRounds) _isMatchOver = true; });
         _scrollToBottom();
       }
     } catch (e) {
@@ -138,7 +140,13 @@ class _ArenaScreenState extends State<ArenaScreen> {
       elevation: 0, centerTitle: false,
       leading: IconButton(icon: const Icon(Icons.arrow_back_rounded, color: AppColors.mutedText), onPressed: () => Navigator.pop(context)),
       title: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-        Text('Round ${_userMessageCount.clamp(1, 4)} of 4', style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontSize: 16, fontWeight: FontWeight.bold)),
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          borderRadius: 8,
+          borderColor: AppColors.neonPurple.withOpacity(0.3),
+          child: Text('Round ${_userMessageCount.clamp(1, widget.totalRounds)} / ${widget.totalRounds}', style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontSize: 16, fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 4),
         ShaderMask(shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds), child: Text('User vs. ${widget.opponentPersona}', style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
       ]),
       actions: [
@@ -149,7 +157,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
   }
 
   Widget _buildRoundProgress() {
-    return Container(height: 3, margin: const EdgeInsets.symmetric(horizontal: 20), child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: _userMessageCount / 4, backgroundColor: AppColors.divider, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.neonPurple))));
+    return Container(height: 3, margin: const EdgeInsets.symmetric(horizontal: 20), child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: _userMessageCount / widget.totalRounds, backgroundColor: AppColors.divider, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.neonPurple))));
   }
 
   Widget _buildLoadingOverlay() {
