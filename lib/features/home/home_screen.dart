@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _dailyTopic = "";
   String _dailyPersona = "";
   String _dailyStance = "";
+  int _dailyRounds = 5;
 
   final List<String> _topics = [
     "AI Replacing Human Art",
@@ -57,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
         dailyTopic: _dailyTopic,
         dailyPersona: _dailyPersona,
         dailyStance: _dailyStance,
+        dailyRounds: _dailyRounds,
       ),
       const LeaguesScreen(),
       const HistoryScreen(),
@@ -69,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _dailyTopic = _topics[random.nextInt(_topics.length)];
     _dailyPersona = _personas[random.nextInt(_personas.length)];
     _dailyStance = _stances[random.nextInt(_stances.length)];
+    _dailyRounds = random.nextInt(4) + 5;
   }
 
   @override
@@ -458,7 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildDailyChallenge(BuildContext context,
-      {required String topic, required String persona, required String stance}) {
+      {required String topic, required String persona, required String stance, required int rounds}) {
     return GlassCard(
       borderColor: AppColors.electricBlue.withOpacity(0.3),
       boxShadow: [
@@ -522,6 +525,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w900,
                         fontStyle: FontStyle.italic,
                         height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '⚡ MATCH LENGTH: $rounds ROUNDS',
+                      style: GoogleFonts.outfit(
+                        color: AppColors.mutedText,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -588,7 +601,6 @@ class _HomeScreenState extends State<HomeScreen> {
             text: 'ACCEPT CHALLENGE',
             icon: Icons.bolt,
             onPressed: () {
-              int dailyRounds = Random().nextInt(4) + 5;
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -596,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     topic: topic,
                     userStance: '$stance-Debater',
                     opponentPersona: persona,
-                    totalRounds: dailyRounds,
+                    totalRounds: rounds,
                   ),
                 ),
               );
@@ -795,12 +807,14 @@ class _HomeDashboard extends StatelessWidget {
   final String dailyTopic;
   final String dailyPersona;
   final String dailyStance;
+  final int dailyRounds;
 
   const _HomeDashboard({
     required this.onViewAll,
     required this.dailyTopic,
     required this.dailyPersona,
     required this.dailyStance,
+    required this.dailyRounds,
   });
 
   @override
@@ -854,6 +868,7 @@ class _HomeDashboard extends StatelessWidget {
                   topic: dailyTopic,
                   persona: dailyPersona,
                   stance: dailyStance,
+                  rounds: dailyRounds,
                 ),
                 const SizedBox(height: 32),
                 homeState.buildCustomMatchSection(context),

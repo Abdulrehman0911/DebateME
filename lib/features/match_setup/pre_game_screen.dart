@@ -87,19 +87,22 @@ class _PreGameScreenState extends State<PreGameScreen> {
   }
 
   Widget _buildRoundsSelector() {
-    return GlassCard(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      borderColor: AppColors.neonPurple.withOpacity(0.3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.neonPurple.withOpacity(0.5), width: 1.0),
+      ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Total Rounds: ', style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 14)),
-              NeonText(
-                text: '$_selectedRounds',
-                fontSize: 32,
-                glowColor: AppColors.electricBlue,
+              Text('Total Rounds: ', style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 14, fontWeight: FontWeight.bold)),
+              Text(
+                '$_selectedRounds',
+                style: GoogleFonts.spaceGrotesk(color: AppColors.electricBlue, fontSize: 32, fontWeight: FontWeight.w900),
               ),
             ],
           ),

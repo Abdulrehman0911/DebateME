@@ -43,26 +43,12 @@ class _NeonButtonState extends State<NeonButton> {
         child: Container(
           height: widget.height,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: colors,
-            ),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: colors[0].withOpacity(0.6),
-                blurRadius: 20,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: colors[1].withOpacity(0.3),
-                blurRadius: 30,
-                spreadRadius: -2,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            border: Border.all(
+              color: colors[0].withOpacity(0.5),
+              width: 1.0,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

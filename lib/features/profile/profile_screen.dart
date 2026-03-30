@@ -46,22 +46,18 @@ class ProfileScreen extends StatelessWidget {
                 );
               }
 
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return const Center(
-                  child: Text('Profile not found', style: TextStyle(color: Colors.white)),
-                );
-              }
+              final data = (snapshot.hasData && snapshot.data!.exists) ? snapshot.data!.data() as Map<String, dynamic>? : null;
+              final String username = data?['username'] ?? currentUser.displayName ?? 'Debater';
+              final String email = data?['email'] ?? currentUser.email ?? 'Unknown Email';
+              final int elo = data?['elo'] ?? 1000;
+              final int wins = data?['wins'] ?? 0;
+              final int losses = data?['losses'] ?? 0;
+              final int streak = data?['streak'] ?? 0;
 
-              final data = snapshot.data!.data() as Map<String, dynamic>;
-              final String username = data['username'] ?? 'Debater';
-              final String email = data['email'] ?? '';
-              final int elo = data['elo'] ?? 1000;
-              final int wins = data['wins'] ?? 0;
-              final int losses = data['losses'] ?? 0;
-              final int streak = data['streak'] ?? 0;
-
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -154,7 +150,21 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                   ],
                 ),
-              );
+              ),
+              Positioned(
+                top: 16,
+                left: 16,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white70),
+                  onPressed: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+              ),
+            ],
+          );
             },
           ),
         ),

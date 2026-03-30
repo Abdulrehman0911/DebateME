@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/services/ai_debater_service.dart';
+import '../../services/ai_service.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/neon_button.dart';
 import '../scorecard/scorecard_screen.dart';
@@ -29,7 +30,7 @@ class ArenaScreen extends StatefulWidget {
 class _ArenaScreenState extends State<ArenaScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final AiDebaterService _aiService = AiDebaterService();
+  final AIDebateService _aiService = AIDebateService();
   late final List<Map<String, dynamic>> _messages;
   bool _isTyping = false;
   int _userMessageCount = 0;
@@ -54,10 +55,18 @@ class _ArenaScreenState extends State<ArenaScreen> {
   Future<void> _startAiDebate() async {
     setState(() => _isTyping = true);
     try {
-      final response = await _aiService.getOpponentResponse(
-        topic: widget.topic, userStance: widget.userStance,
-        opponentPersona: widget.opponentPersona,
-        userMessage: '[AI starts: Make your opening argument for the PRO side.]',
+      final chatHistory = _messages.map((m) => m['isAI'] == true 
+        ? Content.model([TextPart(m['text'] as String)]) 
+        : Content.text(m['text'] as String)).toList();
+
+      final response = await _aiService.getResponse(
+        '[AI starts: Make your opening argument for the PRO side.]',
+        widget.topic,
+        widget.opponentPersona,
+        1200,
+        chatHistory,
+        _userMessageCount,
+        widget.totalRounds,
       );
       if (mounted) {
         setState(() { _isTyping = false; _messages.add({'isAI': true, 'text': response}); });
@@ -85,7 +94,19 @@ class _ArenaScreenState extends State<ArenaScreen> {
     setState(() { _messages.add({'isAI': false, 'text': text}); _messageController.clear(); _isTyping = true; _userMessageCount++; });
     _scrollToBottom();
     try {
-      final response = await _aiService.getOpponentResponse(topic: widget.topic, userStance: widget.userStance, opponentPersona: widget.opponentPersona, userMessage: text);
+      final chatHistory = _messages.sublist(0, _messages.length - 1).map((m) => m['isAI'] == true 
+        ? Content.model([TextPart(m['text'] as String)]) 
+        : Content.text(m['text'] as String)).toList();
+
+      final response = await _aiService.getResponse(
+        text,
+        widget.topic,
+        widget.opponentPersona,
+        1200,
+        chatHistory,
+        _userMessageCount,
+        widget.totalRounds,
+      );
       if (mounted) {
         setState(() { _isTyping = false; _messages.add({'isAI': true, 'text': response}); if (_userMessageCount >= widget.totalRounds) _isMatchOver = true; });
         _scrollToBottom();
