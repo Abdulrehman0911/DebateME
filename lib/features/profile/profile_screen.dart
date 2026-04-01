@@ -53,6 +53,8 @@ class ProfileScreen extends StatelessWidget {
               final int wins = data?['wins'] ?? 0;
               final int losses = data?['losses'] ?? 0;
               final int streak = data?['streak'] ?? 0;
+              final int totalMatches = data?['totalMatches'] ?? (wins + losses);
+              final double winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0.0;
 
               return Stack(
                 children: [
@@ -128,6 +130,8 @@ class ProfileScreen extends StatelessWidget {
                         _buildStatCard('WINNING STREAK', streak.toString(), Icons.local_fire_department, AppColors.draw, 1),
                         _buildStatCard('WINS', wins.toString(), Icons.check_circle_outline, AppColors.victory, 2),
                         _buildStatCard('LOSSES', losses.toString(), Icons.cancel_outlined, AppColors.defeat, 3),
+                        _buildStatCard('TOTAL MATCHES', totalMatches.toString(), Icons.tag, AppColors.electricBlue, 4),
+                        _buildStatCard('WIN RATE', '${winRate.toStringAsFixed(1)}%', Icons.pie_chart_outline, AppColors.accentGradient.colors.first, 5),
                       ],
                     ),
 

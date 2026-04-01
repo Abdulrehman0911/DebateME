@@ -8,6 +8,8 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/neon_button.dart';
 import '../scorecard/scorecard_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ArenaScreen extends StatefulWidget {
   final String topic;
@@ -36,6 +38,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
   int _userMessageCount = 0;
   bool _isMatchOver = false;
   bool _isAnalyzing = false;
+  late final List<int> _steelManRounds;
+  final Set<int> _completedSteelMans = {};
+  int _userElo = 1000;
 
   @override
   void initState() {
@@ -47,9 +52,27 @@ class _ArenaScreenState extends State<ArenaScreen> {
           'text': 'I am the ${widget.opponentPersona}. You are defending the PRO stance on ${widget.topic}. Make your opening argument.',
         },
     ];
+    _steelManRounds = _calculateSteelManRounds(widget.totalRounds);
+    _fetchUserElo();
     if (widget.userStance.toLowerCase().contains('anti') || widget.userStance.toLowerCase().contains('con')) {
       _startAiDebate();
     }
+  }
+
+  Future<void> _fetchUserElo() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (mounted && doc.exists) {
+        setState(() { _userElo = doc.data()?['elo'] ?? 1000; });
+      }
+    }
+  }
+
+  List<int> _calculateSteelManRounds(int total) {
+    if (total <= 7) return [total ~/ 2 + 1];
+    if (total <= 12) return [(total / 3).floor() + 1, (2 * total / 3).floor() + 1];
+    return [(total / 4).floor() + 1, (2 * total / 4).floor() + 1, (3 * total / 4).floor() + 1];
   }
 
   Future<void> _startAiDebate() async {
@@ -63,7 +86,7 @@ class _ArenaScreenState extends State<ArenaScreen> {
         '[AI starts: Make your opening argument for the PRO side.]',
         widget.topic,
         widget.opponentPersona,
-        1200,
+        _userElo,
         chatHistory,
         _userMessageCount,
         widget.totalRounds,
@@ -91,7 +114,27 @@ class _ArenaScreenState extends State<ArenaScreen> {
   Future<void> _handleSendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty || _isTyping) return;
-    setState(() { _messages.add({'isAI': false, 'text': text}); _messageController.clear(); _isTyping = true; _userMessageCount++; });
+
+    // Check for Steel-Man Round
+    int currentRound = _userMessageCount + 1;
+    if (_steelManRounds.contains(currentRound) && !_completedSteelMans.contains(currentRound)) {
+      _showSteelManModal(currentRound, text);
+      return;
+    }
+
+    _processSendMessage(text);
+  }
+
+  Future<void> _processSendMessage(String text, {String? steelManText}) async {
+    setState(() { 
+      String finalMsg = steelManText != null 
+          ? "[STEEL-MAN]: $steelManText\n\n[ARGUMENT]: $text" 
+          : text;
+      _messages.add({'isAI': false, 'text': finalMsg}); 
+      _messageController.clear(); 
+      _isTyping = true; 
+      _userMessageCount++; 
+    });
     _scrollToBottom();
     try {
       final chatHistory = _messages.sublist(0, _messages.length - 1).map((m) => m['isAI'] == true 
@@ -99,10 +142,10 @@ class _ArenaScreenState extends State<ArenaScreen> {
         : Content.text(m['text'] as String)).toList();
 
       final response = await _aiService.getResponse(
-        text,
+        _messages.last['text'] as String,
         widget.topic,
         widget.opponentPersona,
-        1200,
+        _userElo, // Real-time Elo from Firestore
         chatHistory,
         _userMessageCount,
         widget.totalRounds,
@@ -119,10 +162,100 @@ class _ArenaScreenState extends State<ArenaScreen> {
     }
   }
 
+  void _showSteelManModal(int round, String originalText) {
+    final TextEditingController steelManController = TextEditingController();
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Steel-Man Modal',
+      barrierColor: Colors.black.withOpacity(0.8),
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, anim1, anim2) => const SizedBox(),
+      transitionBuilder: (context, anim1, anim2, child) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10 * anim1.value, sigmaY: 10 * anim1.value),
+          child: FadeTransition(
+            opacity: anim1,
+            child: ScaleTransition(
+              scale: anim1.drive(CurveTween(curve: Curves.easeOutBack)),
+              child: AlertDialog(
+                backgroundColor: Colors.transparent,
+                contentPadding: EdgeInsets.zero,
+                content: GlassCard(
+                  padding: const EdgeInsets.all(24),
+                  borderRadius: 24,
+                  borderColor: AppColors.electricBlue.withOpacity(0.5),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds),
+                        child: Text(
+                          '⚡ STEEL-MAN ROUND!',
+                          style: GoogleFonts.spaceGrotesk(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Pause the debate. Summarize your opponent's last argument fairly and strongly. A good steel-man boosts your final score!",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: AppColors.mutedText,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextField(
+                        controller: steelManController,
+                        maxLines: 3,
+                        style: GoogleFonts.outfit(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Summarize their argument...',
+                          hintStyle: GoogleFonts.outfit(color: Colors.white24),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.05),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      NeonButton(
+                        text: 'SUBMIT STEEL-MAN',
+                        onPressed: () {
+                          if (steelManController.text.trim().isEmpty) return;
+                          Navigator.pop(context);
+                          _completedSteelMans.add(round);
+                          _processSendMessage(originalText, steelManText: steelManController.text.trim());
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _handleFinishMatch() async {
     setState(() => _isAnalyzing = true);
     try {
-      final evaluation = await _aiService.evaluateDebate(chatHistory: _messages, topic: widget.topic, userStance: widget.userStance);
+      final evaluation = await _aiService.evaluateDebate(
+        chatHistory: _messages, 
+        topic: widget.topic, 
+        userStance: widget.userStance,
+        userElo: _userElo,
+      );
       if (mounted) { setState(() => _isAnalyzing = false); Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ScorecardScreen(evaluationData: evaluation))); }
     } catch (e) {
       if (mounted) { setState(() => _isAnalyzing = false); Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ScorecardScreen(evaluationData: {}))); }
@@ -167,6 +300,22 @@ class _ArenaScreenState extends State<ArenaScreen> {
           borderColor: AppColors.neonPurple.withOpacity(0.3),
           child: Text('Round ${_userMessageCount.clamp(1, widget.totalRounds)} / ${widget.totalRounds}', style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontSize: 16, fontWeight: FontWeight.bold)),
         ),
+        if ((_userMessageCount > 0 && _userMessageCount % 3 == 0) || _userMessageCount == widget.totalRounds)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.electricBlue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppColors.electricBlue.withOpacity(0.5)),
+              ),
+              child: Text(
+                'STEEL-MAN ROUND',
+                style: GoogleFonts.spaceGrotesk(color: AppColors.electricBlue, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1),
+              ),
+            ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds),
+          ),
         const SizedBox(height: 4),
         ShaderMask(shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds), child: Text('User vs. ${widget.opponentPersona}', style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
       ]),

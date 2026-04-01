@@ -8,6 +8,8 @@ import '../../widgets/glass_card.dart';
 import '../../widgets/neon_text.dart';
 import '../../widgets/neon_button.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ScorecardScreen extends StatefulWidget {
   final Map<String, dynamic> evaluationData;
@@ -45,6 +47,34 @@ class _ScorecardScreenState extends State<ScorecardScreen> with SingleTickerProv
     final record = MatchRecord(topic: widget.evaluationData['topic'] ?? 'Custom Match', userStance: widget.evaluationData['userStance'] ?? 'User Stance', opponentPersona: widget.evaluationData['opponentPersona'] ?? 'AI Debater', result: result, date: DateTime.now(), eloChange: eloChange);
     final box = Hive.box('match_history');
     await box.add(record.toMap());
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          final snapshot = await transaction.get(docRef);
+          if (snapshot.exists) {
+            final data = snapshot.data() as Map<String, dynamic>;
+            int currentElo = data['elo'] ?? 1000;
+            int currentStreak = data['streak'] ?? 0;
+            
+            int newStreak = result == 'Victory' ? currentStreak + 1 : (result == 'Defeat' ? 0 : currentStreak);
+            
+            transaction.update(docRef, {
+              'elo': currentElo + eloChange,
+              'streak': newStreak,
+              'totalMatches': FieldValue.increment(1),
+              if (result == 'Victory') 'wins': FieldValue.increment(1),
+              if (result == 'Defeat') 'losses': FieldValue.increment(1),
+            });
+          }
+        });
+      } catch (e) {
+        // Silently handle error to not break the UI, though it should be logged in a real app
+      }
+    }
+
     if (mounted) setState(() => _recordSaved = true);
   }
 
@@ -95,24 +125,88 @@ class _ScorecardScreenState extends State<ScorecardScreen> with SingleTickerProv
   }
 
   void _showCoachAnalysisModal(BuildContext context) {
-    showDialog(context: context, builder: (context) => Dialog(
-      backgroundColor: AppColors.surface, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: Colors.white.withOpacity(0.1))),
-      child: Padding(padding: const EdgeInsets.all(32.0), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          ShaderMask(shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds), child: const Icon(Icons.analytics_outlined, color: Colors.white, size: 28)),
-          const SizedBox(width: 12),
-          Text('Coach Feedback', style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontSize: 24, fontWeight: FontWeight.w800)),
-        ]),
-        const SizedBox(height: 24),
-        Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: AppColors.defeat.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.defeat.withOpacity(0.3))),
-          child: Text('Logic Integrity Sub-score: ${widget.evaluationData['fallacyScore']}%', style: GoogleFonts.outfit(color: AppColors.defeat, fontSize: 12, fontWeight: FontWeight.bold))),
-        const SizedBox(height: 24),
-        Text(widget.evaluationData['coachFeedback'] ?? 'Keep practicing!', style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 16, height: 1.6)),
-        const SizedBox(height: 32),
-        SizedBox(width: double.infinity, child: TextButton(onPressed: () => Navigator.pop(context), style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: AppColors.deepVoid, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          child: Text('CLOSE', style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontWeight: FontWeight.bold, letterSpacing: 1.5)))),
-      ])),
-    ));
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (bounds) => AppColors.accentGradient.createShader(bounds),
+                      child: const Icon(Icons.psychology_outlined, color: Colors.white, size: 32),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'AI Coach Feedback',
+                      style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontSize: 22, fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildAnalysisSection('🚩 LOGICAL FALLACIES', widget.evaluationData['logicalFallaciesCommitted'] ?? 'None detected.'),
+                const SizedBox(height: 20),
+                _buildAnalysisSection('🎯 STRATEGIC MISTAKES', widget.evaluationData['strategicMistakes'] ?? 'Overall solid performance.'),
+                const SizedBox(height: 20),
+                _buildAnalysisSection('🚀 HOW TO IMPROVE', widget.evaluationData['howToImprove'] ?? 'Keep practicing your rebuttals.'),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: AppColors.deepVoid,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      'GOT IT',
+                      style: GoogleFonts.spaceGrotesk(color: AppColors.primaryText, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnalysisSection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.spaceGrotesk(color: AppColors.electricBlue, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.2),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Text(
+            content,
+            style: GoogleFonts.outfit(color: AppColors.mutedText, fontSize: 15, height: 1.5),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPerformanceScorecard(double clarity, double logic, double rebuttal, double fallacies) {
