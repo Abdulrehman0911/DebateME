@@ -44,3 +44,16 @@ app.*.map.json
 
 # Environment Variables
 .env
+
+# Node / Playwright (local automation tooling)
+node_modules/
+package-lock.json
+npm-debug.log*
+test-results/
+playwright-report/
+
+# Local automation artifacts
+artifacts/screenshots/
+
+# Firebase local cache
+.firebase/
