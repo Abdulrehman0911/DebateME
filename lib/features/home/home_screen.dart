@@ -22,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  late final List<Widget> _screens;
+  late final PageController _pageController;
 
   // Daily Challenge Data
   String _dailyTopic = "";
@@ -51,27 +51,75 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
     _generateDailyChallenge();
-    _screens = [
-      _HomeDashboard(
-        onViewAll: () => setState(() => _currentIndex = 2),
-        dailyTopic: _dailyTopic,
-        dailyPersona: _dailyPersona,
-        dailyStance: _dailyStance,
-        dailyRounds: _dailyRounds,
-      ),
-      const LeaguesScreen(),
-      const HistoryScreen(),
-      const ProfileScreen(),
-    ];
   }
 
   void _generateDailyChallenge() {
+    final previousTopic = _dailyTopic;
+    final previousPersona = _dailyPersona;
+    final previousStance = _dailyStance;
+    final previousRounds = _dailyRounds;
+
     final random = Random();
-    _dailyTopic = _topics[random.nextInt(_topics.length)];
-    _dailyPersona = _personas[random.nextInt(_personas.length)];
-    _dailyStance = _stances[random.nextInt(_stances.length)];
-    _dailyRounds = random.nextInt(4) + 5;
+    int attempts = 0;
+
+    do {
+      _dailyTopic = _topics[random.nextInt(_topics.length)];
+      _dailyPersona = _personas[random.nextInt(_personas.length)];
+      _dailyStance = _stances[random.nextInt(_stances.length)];
+      _dailyRounds = random.nextInt(4) + 5;
+      attempts++;
+    } while (
+        attempts < 6 &&
+        _dailyTopic == previousTopic &&
+        _dailyPersona == previousPersona &&
+        _dailyStance == previousStance &&
+        _dailyRounds == previousRounds);
+  }
+
+  void _refreshDailyChallenge() {
+    setState(() {
+      _generateDailyChallenge();
+    });
+  }
+
+  void _onTabSelected(int index) {
+    if (_currentIndex == index) return;
+    setState(() {
+      _currentIndex = index;
+    });
+
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    if (_currentIndex != index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+
+    if (index == 0) {
+      _refreshDailyChallenge();
+    }
+  }
+
+  void _openCustomMatch(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PreGameScreen()),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -82,9 +130,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          physics: const BouncingScrollPhysics(),
+          children: [
+            _HomeDashboard(
+              onViewAll: () => _onTabSelected(2),
+              onStartCustomMatch: () => _openCustomMatch(context),
+              dailyTopic: _dailyTopic,
+              dailyPersona: _dailyPersona,
+              dailyStance: _dailyStance,
+              dailyRounds: _dailyRounds,
+            ),
+            const LeaguesScreen(),
+            const HistoryScreen(),
+            const ProfileScreen(),
+          ],
         ),
         bottomNavigationBar: _buildBottomNav(context),
       ),
@@ -104,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildNavItem(Icons.home_rounded, 'HOME', index: 0),
-          _buildNavItem(Icons.emoji_events_outlined, 'LEAGUES', index: 1),
+          _buildNavItem(Icons.emoji_events_outlined, 'LEAGUE', index: 1),
           _buildNavItem(Icons.history_rounded, 'HISTORY', index: 2),
           _buildNavItem(Icons.person_outline_rounded, 'PROFILE', index: 3),
         ],
@@ -116,9 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool isSelected = _currentIndex == index;
     return InkWell(
       onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
+        _onTabSelected(index);
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -660,6 +720,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget buildStickyCustomMatchButton(BuildContext context, {required VoidCallback onPressed}) {
+    return GlassCard(
+      padding: const EdgeInsets.all(12),
+      borderColor: AppColors.neonPurple.withOpacity(0.35),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.neonPurple.withOpacity(0.12),
+          blurRadius: 22,
+          spreadRadius: 0,
+        ),
+      ],
+      child: NeonButton(
+        text: 'ENTER CUSTOM MATCH',
+        icon: Icons.play_arrow_rounded,
+        height: 58,
+        onPressed: onPressed,
+      ),
+    );
+  }
+
   Widget buildActivityFeed(BuildContext context, Box box, VoidCallback onViewAll) {
     final matches = box.values.toList().reversed.take(3).toList();
 
@@ -804,6 +884,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _HomeDashboard extends StatelessWidget {
   final VoidCallback onViewAll;
+  final VoidCallback onStartCustomMatch;
   final String dailyTopic;
   final String dailyPersona;
   final String dailyStance;
@@ -811,6 +892,7 @@ class _HomeDashboard extends StatelessWidget {
 
   const _HomeDashboard({
     required this.onViewAll,
+    required this.onStartCustomMatch,
     required this.dailyTopic,
     required this.dailyPersona,
     required this.dailyStance,
@@ -851,32 +933,43 @@ class _HomeDashboard extends StatelessWidget {
         }
 
         return SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                homeState.buildTopBar(context),
-                const SizedBox(height: 32),
-                homeState.buildProfileHeader(context, elo: elo),
-                const SizedBox(height: 32),
-                homeState.buildPerformanceHub(winRate: winRate, streak: currentStreak),
-                const SizedBox(height: 32),
-                homeState.buildDailyChallenge(
-                  context,
-                  topic: dailyTopic,
-                  persona: dailyPersona,
-                  stance: dailyStance,
-                  rounds: dailyRounds,
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    homeState.buildTopBar(context),
+                    const SizedBox(height: 32),
+                    homeState.buildProfileHeader(context, elo: elo),
+                    const SizedBox(height: 32),
+                    homeState.buildPerformanceHub(winRate: winRate, streak: currentStreak),
+                    const SizedBox(height: 32),
+                    homeState.buildDailyChallenge(
+                      context,
+                      topic: dailyTopic,
+                      persona: dailyPersona,
+                      stance: dailyStance,
+                      rounds: dailyRounds,
+                    ),
+                    const SizedBox(height: 32),
+                    homeState.buildActivityFeed(context, box, onViewAll),
+                    const SizedBox(height: 140),
+                  ],
                 ),
-                const SizedBox(height: 32),
-                homeState.buildCustomMatchSection(context),
-                const SizedBox(height: 32),
-                homeState.buildActivityFeed(context, box, onViewAll),
-                const SizedBox(height: 100), // Space for bottom nav
-              ],
-            ),
+              ),
+              Positioned(
+                left: 24,
+                right: 24,
+                bottom: 8,
+                child: homeState.buildStickyCustomMatchButton(
+                  context,
+                  onPressed: onStartCustomMatch,
+                ),
+              ),
+            ],
           ),
         );
       },

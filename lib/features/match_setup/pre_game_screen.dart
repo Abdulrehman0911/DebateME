@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/constants/app_colors.dart';
-import '../../widgets/glass_card.dart';
 import '../../widgets/neon_button.dart';
-import '../../widgets/neon_text.dart';
 import '../arena/arena_screen.dart';
 
 class PreGameScreen extends StatefulWidget {

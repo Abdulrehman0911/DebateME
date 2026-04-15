@@ -155,8 +155,9 @@ class _ArenaScreenState extends State<ArenaScreen> {
         _scrollToBottom();
       }
     } catch (e) {
+      debugPrint('AI ERROR: $e'); // Log actual error for debugging
       if (mounted) {
-        setState(() { _isTyping = false; _messages.add({'isAI': true, 'text': 'Error: Failed to connect. Try again.'}); });
+        setState(() { _isTyping = false; _messages.add({'isAI': true, 'text': 'Error: Failed to connect (Check connection or API key).'}); });
         _scrollToBottom();
       }
     }
@@ -399,11 +400,15 @@ class _ArenaScreenState extends State<ArenaScreen> {
           ),
         )))),
         const SizedBox(width: 12),
-        GestureDetector(onTap: _handleSendMessage, child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(gradient: AppColors.accentGradient, shape: BoxShape.circle, boxShadow: [BoxShadow(color: AppColors.neonPurple.withOpacity(0.5), blurRadius: 12, spreadRadius: 1)]),
-          child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 24),
-        )),
+        Semantics(
+          button: true,
+          label: 'Send Argument',
+          child: GestureDetector(onTap: _handleSendMessage, child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(gradient: AppColors.accentGradient, shape: BoxShape.circle, boxShadow: [BoxShadow(color: AppColors.neonPurple.withOpacity(0.5), blurRadius: 12, spreadRadius: 1)]),
+            child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 24),
+          )),
+        ),
       ]),
     );
   }

@@ -63,6 +63,25 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  Future<void> _continueAsGuest() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } catch (_) {
+      // Fallback to local guest mode if anonymous auth is disabled.
+    }
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  }
+
   String _mapFirebaseError(String code) {
     switch (code) {
       case 'user-not-found':
@@ -361,6 +380,31 @@ class _LoginScreenState extends State<LoginScreen>
                                       icon: Icons.login_rounded,
                                       onPressed: _login,
                                     ),
+
+                              const SizedBox(height: 12),
+
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: OutlinedButton.icon(
+                                  onPressed: _continueAsGuest,
+                                  icon: const Icon(Icons.person_outline_rounded, size: 18),
+                                  label: Text(
+                                    'CONTINUE AS GUEST',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.mutedText,
+                                    side: BorderSide(color: AppColors.divider.withOpacity(0.8)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),

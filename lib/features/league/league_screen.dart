@@ -4,7 +4,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/models/match_record.dart';
-import '../../widgets/glass_card.dart';
 
 class LeaguesScreen extends StatelessWidget {
   const LeaguesScreen({super.key});

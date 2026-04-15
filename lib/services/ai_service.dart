@@ -3,6 +3,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 
 class AIDebateService {
+  String _resolveModel() {
+    final configured = dotenv.env['GEMINI_MODEL']?.trim();
+    if (configured != null && configured.isNotEmpty) {
+      return configured;
+    }
+    return 'gemini-2.5-flash';
+  }
+
   Future<String> getResponse(
     String userMessage,
     String topic,
@@ -34,7 +42,7 @@ Format: Keep responses concise (under 100 words).
 ''';
 
     final model = GenerativeModel(
-      model: 'gemini-2.5-flash',
+      model: _resolveModel(),
       apiKey: apiKey,
       systemInstruction: Content.system(systemInstruction),
     );
@@ -52,9 +60,13 @@ Format: Keep responses concise (under 100 words).
     required int userElo,
   }) async {
     final String? apiKey = dotenv.env['GEMINI_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      throw Exception('GEMINI_API_KEY not found in environment variables');
+    }
+
     final model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: apiKey ?? '',
+      model: _resolveModel(),
+      apiKey: apiKey,
     );
 
     try {
