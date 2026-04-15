@@ -16,9 +16,7 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# VS Code (uncomment if you don't want to version these)
 #.vscode/
 
 # Flutter/Dart/Pub related
@@ -27,9 +25,11 @@ migrate_working_dir/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
 /build/
+.metadata
 
 # Symbolication related
 app.*.symbols
@@ -37,12 +37,12 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# Android Studio build artifacts
 /android/app/debug
 /android/app/profile
 /android/app/release
 
-# Environment Variables
+# Environment Variables — NEVER commit secrets
 .env
 
 # Node / Playwright (local automation tooling)
@@ -53,7 +53,22 @@ test-results/
 playwright-report/
 
 # Local automation artifacts
-artifacts/screenshots/
+artifacts/
 
 # Firebase local cache
 .firebase/
+
+# Extracted PRD / temp archives (not source code)
+prd_extracted/
+prd_temp.zip
+DebateMe_Final_PRD.docx
+
+# Stitch design mockups (not source code)
+stitch/
+stitch.zip
+
+# GitHub Actions CI (uses dummy keys — not needed for personal project)
+.github/
+
+# Lock file (optional — uncomment if you want reproducible builds tracked)
+# pubspec.lock
