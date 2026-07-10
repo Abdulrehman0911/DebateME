@@ -1,6 +1,6 @@
 # ⚔️ DebateME — Gamified AI Debate Trainer
 
-![Home Dashboard](screenshots/home_dashboard.png)
+![Home Dashboard](screenshots/HomeDashboard.jpeg)
 
 ## 🎮 Overview
 
@@ -12,31 +12,57 @@ Developed by **AbdulRehman (241-0911)**.
 
 ---
 
+## 🎨 UI — Glassmorphism Dark Design
+
+DebateME features a **premium dark-mode UI** built on a custom glassmorphism design system:
+
+- **Frosted glass cards** with subtle transparency and blurred backgrounds
+- **Monochromatic dark palette** — deep charcoal to slate-gray tones for a refined, distraction-free interface
+- **Smooth micro-animations** powered by `flutter_animate` for screen transitions and interactive elements
+- **Custom bottom navigation bar** with pill-shaped active indicator and icon-label pairing
+- **Consistent typography hierarchy** with bold uppercase section headers and clean body text
+- **Responsive layout** across mobile, tablet, web, and desktop
+
+---
+
 ## ✨ Key Features
 
-- **🤖 Adaptive AI Opponents**: Debate against four unique AI personas — The Philosopher, The Politician, The Scientist, and The Aggressor — each with a distinct debate style.
-- **⚡ Steel-Man Rounds**: Mid-debate challenges that force you to summarize your opponent's argument fairly, boosting your final score.
-- **📊 Performance Scorecard**: Post-match breakdown of Clarity, Logic, Rebuttals, and Fallacy Detection with percentage scores.
-- **🧠 AI Coach Feedback**: Detailed analysis of logical fallacies, strategic mistakes, and actionable tips to improve.
-- **🏆 Elo Rating & Leagues**: Competitive ranking system with global leaderboard tiers (Master, Diamond, etc.).
-- **📅 Daily Challenges**: Auto-generated debate topics with countdown timers and stance assignments.
-- **📈 Performance Hub**: Track win rate, active streaks, and Elo progression over time.
+- **🤖 Adaptive AI Opponents** — Debate against four unique AI personas — The Philosopher, The Politician, The Scientist, and The Aggressor — each with a distinct debate style.
+- **⚡ Steel-Man Rounds** — Mid-debate challenges that force you to summarize your opponent's argument fairly, boosting your final score.
+- **📊 Performance Scorecard** — Post-match breakdown of Clarity, Logic, Rebuttals, and Fallacy Detection with percentage scores and a best-argument highlight.
+- **🧠 AI Coach Feedback** — Detailed analysis of logical fallacies, strategic mistakes, and actionable tips to improve.
+- **🏆 Elo Rating & Leagues** — Competitive ranking system with global leaderboard tiers (Master, Diamond, etc.).
+- **📅 Daily Challenges** — Auto-generated debate topics with countdown timers and stance assignments.
+- **📈 Performance Hub** — Track win rate, active streaks, and Elo progression over time.
+- **👤 Guest Mode** — Try the app instantly without creating an account.
 
 ---
 
 ## 📸 Screenshots
 
-| Home Dashboard | Daily Challenge | League Rankings |
-|:---:|:---:|:---:|
-| ![Home](screenshots/home_dashboard.png) | ![Challenge](screenshots/daily_challenge.png) | ![League](screenshots/league_rankings.png) |
+| Sign In | Sign Up |
+|:---:|:---:|
+| ![Sign In](screenshots/SignIn.jpeg) | ![Sign Up](screenshots/SignUp.jpeg) |
 
-| Match Setup | Opponent Selection | Debate Arena |
-|:---:|:---:|:---:|
-| ![Setup](screenshots/match_setup.png) | ![Opponents](screenshots/opponent_select.png) | ![Arena](screenshots/debate_arena.png) |
+| Home Dashboard | Daily Challenge & Activity Feed |
+|:---:|:---:|
+| ![Home](screenshots/HomeDashboard.jpeg) | ![Challenge](screenshots/HomeDashboard_2.jpeg) |
 
-| Steel-Man Round | Scorecard | AI Coach Feedback |
+| Match Setup | Persona Selection |
+|:---:|:---:|
+| ![Setup](screenshots/Match_Setup%20(2).png) | ![Personas](screenshots/Persona_Select.png) |
+
+| Debate Arena | Steel-Man Round |
+|:---:|:---:|
+| ![Arena](screenshots/DebateArena.png) | ![Steel-Man](screenshots/SteelMan-Round.png) |
+
+| Scorecard | AI Coach Feedback |
+|:---:|:---:|
+| ![Scorecard](screenshots/ScoreCard%20(2).png) | ![Coach](screenshots/Ai_PoweredCoach_Assistant.png) |
+
+| League Rankings | Match History | Profile |
 |:---:|:---:|:---:|
-| ![Steel-Man](screenshots/steel_man_round.png) | ![Scorecard](screenshots/scorecard.png) | ![Coach](screenshots/coach_feedback.png) |
+| ![League](screenshots/LeagueRankings.jpeg) | ![History](screenshots/History.jpeg) | ![Profile](screenshots/Profile.jpeg) |
 
 ---
 
@@ -49,6 +75,8 @@ Developed by **AbdulRehman (241-0911)**.
 | **Local Storage** | Hive |
 | **AI Engine** | Google Gemini API (`google_generative_ai`) |
 | **State Management** | Provider |
+| **Animations** | `flutter_animate` |
+| **Typography** | Google Fonts |
 
 ---
 
@@ -58,14 +86,23 @@ Developed by **AbdulRehman (241-0911)**.
 lib/
 ├── main.dart                  # App entry point
 ├── firebase_options.dart      # Firebase config
-├── core/                      # Constants, theme, models
-├── services/                  # AI service, API layer
+├── core/
+│   ├── constants/             # Design system tokens & app constants
+│   ├── models/                # Data models (Match, User, etc.)
+│   ├── services/              # Core service layer
+│   └── theme/                 # App-wide theme configuration
+├── services/                  # AI service & API layer
 ├── widgets/                   # Reusable UI components
+│   ├── bottom_nav_bar.dart    # Custom bottom navigation
+│   ├── glass_background.dart  # Glassmorphism scaffold
+│   ├── glass_button.dart      # Frosted glass button
+│   ├── glass_card.dart        # Frosted glass card container
+│   └── glass_text_field.dart  # Themed text input
 └── features/
-    ├── splash/                # Splash screen
-    ├── auth/                  # Login / Sign-up
+    ├── splash/                # Animated splash screen
+    ├── auth/                  # Login / Sign-up / Guest access
     ├── home/                  # Dashboard & performance hub
-    ├── arena/                 # Match setup & config
+    ├── arena/                 # Quick-match arena
     ├── match_setup/           # Topic, stance, opponent selection
     ├── game/                  # Live debate arena
     ├── scorecard/             # Post-match results & coach analysis
